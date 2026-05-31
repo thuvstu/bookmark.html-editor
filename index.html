@@ -26,7 +26,8 @@
             color: #2d3748;
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
             font-size: 14px;
         }
 
@@ -94,6 +95,8 @@
             display: flex;
             flex-direction: column;
             flex: 1;
+            min-height: 0;
+            overflow: hidden;
         }
 
         /* ═══════════════════════════════════════════════════════════
@@ -104,6 +107,10 @@
             width: 100%;
             margin: 0 auto;
             padding: 28px 24px;
+        }
+
+        #tab-merger {
+            overflow-y: auto !important;
         }
 
         .desc {
@@ -457,6 +464,21 @@
             font-size: 13px;
         }
 
+        .tn-lbl-wp {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            font-size: 13px;
+            padding: 4px 6px;
+            margin: 0 2px;
+            border-radius: 4px;
+        }
+
+        .tn-lbl-wp:hover {
+            background: #f7fafc;
+        }
+
         .tn-cnt {
             font-size: 10px;
             color: #a0aec0;
@@ -580,6 +602,30 @@
             display: flex;
             flex-direction: column;
             gap: 4px;
+            min-height: 0;
+        }
+
+        #ed-tree-scroll {
+            flex: 1;
+            overflow-y: auto;
+            padding: 5px 0;
+            min-height: 0;
+        }
+
+        .txt-renamable {
+            cursor: text;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+
+        .txt-renamable:hover {
+            background: rgba(49, 130, 206, 0.1);
+        }
+
+        .ci.selected {
+            background: #ebf8ff;
+            border-color: #3182ce;
+            box-shadow: inset 0 0 0 1px #3182ce;
         }
 
         .ed-empty {
@@ -587,7 +633,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            min-height: 200px;
+            flex: 1;
             color: #a0aec0;
             font-size: 14px;
             text-align: center;
@@ -608,6 +655,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            user-select: none;
             transition: box-shadow 0.15s, border-color 0.15s;
         }
 
@@ -634,12 +682,8 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            cursor: pointer;
+            cursor: default;
             line-height: 1.4;
-        }
-
-        .ci-ttl:hover {
-            color: #0056b3;
         }
 
         .ci-url {
@@ -859,6 +903,39 @@
             background: #e2e8f0;
         }
 
+        .ci-link-anchor {
+            color: #2d3748;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .ci-link-anchor:hover {
+            color: #0d6efd;
+            text-decoration: underline;
+        }
+
+        .ci-link-anchor-url {
+            color: #a0aec0;
+            text-decoration: none;
+            font-size: 11px;
+            display: inline-block;
+            margin-top: 1px;
+        }
+
+        .ci-link-anchor-url:hover {
+            color: #0d6efd;
+            text-decoration: underline;
+        }
+
+        .ci-chk {
+            flex-shrink: 0;
+            margin-right: 8px;
+            cursor: pointer;
+            width: 16px;
+            height: 16px;
+            accent-color: #0d6efd;
+        }
+
         /* Scrollbar */
         ::-webkit-scrollbar {
             width: 5px;
@@ -944,6 +1021,8 @@
                 <button class="ed-tb-btn ed-import" id="ed-btn-import">📂 Import</button>
                 <button class="ed-tb-btn ed-export" id="ed-btn-export" disabled>💾 Export HTML</button>
                 <input type="file" id="ed-file-input" accept=".html,.htm">
+                <button class="ed-tb-btn ed-import" id="ed-btn-scroll-top" title="最上部へ">↑</button>
+                <button class="ed-tb-btn ed-import" id="ed-btn-scroll-bottom" title="最下部へ">↓</button>
             </div>
 
             <div id="ed-layout">
@@ -951,7 +1030,13 @@
                 <div id="ed-tree-panel">
                     <div id="ed-tree-header">
                         <span>📁 フォルダ</span>
-                        <button class="tree-add-btn" id="ed-btn-add-root">＋ フォルダ</button>
+                        <div style="display: flex; gap: 4px; align-items: center;">
+                            <button class="tree-add-btn" id="ed-btn-tree-scroll-top" title="最上部へ"
+                                style="padding: 2px 5px;">↑</button>
+                            <button class="tree-add-btn" id="ed-btn-tree-scroll-bottom" title="最下部へ"
+                                style="padding: 2px 5px;">↓</button>
+                            <button class="tree-add-btn" id="ed-btn-add-root">＋ フォルダ</button>
+                        </div>
                     </div>
                     <div id="ed-tree-scroll">
                         <div class="tree-empty">ファイルをインポートして<br>開始してください</div>
@@ -960,6 +1045,8 @@
 
                 <div id="ed-content-panel">
                     <div id="ed-content-header">
+                        <input type="checkbox" id="ed-chk-all" title="すべて選択" style="margin-right: 8px; cursor: pointer;"
+                            disabled>
                         <div id="ed-breadcrumb">
                             <span class="bc-item" onclick="edSelectFolder(null)">🏠 Root</span>
                         </div>
@@ -967,6 +1054,7 @@
                             <button class="ca-btn" id="ed-btn-search">🔍</button>
                             <button class="ca-btn" id="ed-btn-add-link" disabled>＋ リンク</button>
                             <button class="ca-btn" id="ed-btn-add-folder" disabled>＋ フォルダ</button>
+                            <button class="ca-btn ia-del" id="ed-btn-del-multi" style="display:none;">🗑️ 選択削除</button>
                         </div>
                     </div>
                     <div id="ed-search-bar">
@@ -1068,7 +1156,7 @@
                 mLog.textContent += `ファイル ${fi + 1}: ${links.length} リンク検出\n`;
                 total += links.length;
                 links.forEach(a => {
-                    const url = a.getAttribute('href');
+                    const url = cleanUrl(a.getAttribute('href'));
                     if (!url || !url.startsWith('http')) return;
                     let hostname = 'Others';
                     try { hostname = new URL(url).hostname; } catch (e) { }
@@ -1115,7 +1203,7 @@
         // ═══════════════════════════════════════════════════════════════
         //  EDITOR
         // ═══════════════════════════════════════════════════════════════
-        let edTree = [], edPath = [], edExpanded = new Set(), edIdCtr = 0, edEditingId = null, edSearch = '';
+        let edTree = [], edPath = [], edExpanded = new Set(), edIdCtr = 0, edEditingId = null, edSearch = '', edSelection = new Set(), edLastSelectedId = null;
 
         const edSetStatus = msg => document.getElementById('ed-sb-msg').textContent = msg;
 
@@ -1151,21 +1239,29 @@
         function edParse(html) {
             edIdCtr = 0;
             const doc = new DOMParser().parseFromString(html, 'text/html');
-            function procDL(dl) {
-                if (!dl) return [];
+            const procDL = (dl) => {
                 const res = [];
+                if (!dl) return res;
                 for (const el of dl.children) {
                     if (el.tagName !== 'DT' && el.tagName !== 'DD') continue;
-                    const a = el.querySelector(':scope > a, :scope > A');
-                    const h3 = el.querySelector(':scope > h3, :scope > H3');
-                    const sub = el.querySelector(':scope > dl, :scope > DL');
-                    if (a) res.push({ id: edGenId(), type: 'link', title: a.textContent.trim() || a.getAttribute('href') || 'Untitled', url: a.getAttribute('href') || '', addDate: parseInt(a.getAttribute('add_date') || a.getAttribute('ADD_DATE')) || Math.floor(Date.now() / 1000) });
+                    const a = el.querySelector(':scope > a, :scope > A'), h3 = el.querySelector(':scope > h3, :scope > H3'), sub = el.querySelector(':scope > dl, :scope > DL');
+                    if (a) {
+                        const url = cleanUrl(a.getAttribute('href') || '');
+                        res.push({ id: edGenId(), type: 'link', title: a.textContent.trim() || url || 'Untitled', url, addDate: parseInt(a.getAttribute('add_date') || a.getAttribute('ADD_DATE')) || Math.floor(Date.now() / 1000) });
+                    }
                     else if (h3) res.push({ id: edGenId(), type: 'folder', title: h3.textContent.trim() || 'Folder', addDate: parseInt(h3.getAttribute('add_date') || h3.getAttribute('ADD_DATE')) || Math.floor(Date.now() / 1000), children: procDL(sub) });
                 }
                 return res;
-            }
+            };
+
             const rootDL = doc.querySelector('dl, DL');
-            return rootDL ? procDL(rootDL) : [];
+            if (rootDL) return procDL(rootDL);
+
+            // DL構造がない場合、全てのAタグをフラットに取得
+            return Array.from(doc.querySelectorAll('a, A')).map(a => ({
+                id: edGenId(), type: 'link', title: a.textContent.trim() || a.getAttribute('href') || 'Untitled',
+                url: cleanUrl(a.getAttribute('href') || ''), addDate: Math.floor(Date.now() / 1000)
+            }));
         }
 
         // Serialize
@@ -1182,6 +1278,18 @@
             return `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n<TITLE>Bookmarks</TITLE>\n<H1>Bookmarks</H1>\n${toHTML(edTree, 0)}`;
         }
 
+        function edDeleteSelected() {
+            if (!edSelection.size) return;
+            if (!confirm(`${edSelection.size}件のアイテムを削除しますか？`)) return;
+            edSelection.forEach(id => {
+                const arr = edFindArr(id);
+                if (arr) { const i = arr.findIndex(x => x.id === id); if (i !== -1) arr.splice(i, 1); }
+            });
+            edSelection.clear();
+            edRenderAll();
+            edSetStatus('🗑️ 選択したアイテムを削除しました');
+        }
+
         // Render
         function edUpdateStats() {
             const { links, folders } = edCountAll();
@@ -1191,23 +1299,29 @@
 
         function edRenderTree() {
             const scroll = document.getElementById('ed-tree-scroll');
-            const folders = edTree.filter(n => n.type === 'folder');
-            if (!folders.length) { scroll.innerHTML = `<div class="tree-empty">${edTree.length ? 'フォルダなし' : 'ファイルをインポートして<br>開始してください'}</div>`; return; }
+            if (!edTree.length) { scroll.innerHTML = `<div class="tree-empty">ファイルをインポートして<br>開始してください</div>`; return; }
             const selId = edPath.length ? edPath[edPath.length - 1].id : null;
+            let h = `<div class="tn${selId === null ? ' selected' : ''}" onclick="edSelectFolder(null)" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event, null, 'tree')">
+                         <span class="tn-ico">🏠</span><span class="tn-lbl">Root</span>
+                      </div>`;
+            const folders = edTree.filter(n => n.type === 'folder');
             function rNode(node, depth) {
                 if (node.type !== 'folder') return '';
                 const isSel = node.id === selId;
                 const isExp = edExpanded.has(node.id);
                 const subs = (node.children || []).filter(c => c.type === 'folder');
                 const cnt = edCountLinks(node);
-                let h = `<div class="tn${isSel ? ' selected' : ''}" data-id="${node.id}" onclick="edTreeClick('${node.id}')">`;
+                let h = `<div class="tn${isSel ? ' selected' : ''}" data-id="${node.id}" onclick="edTreeClick('${node.id}')" draggable="true" ondragstart="edOnDragStart(event,'${node.id}')" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event,'${node.id}', 'tree')">`;
                 h += `<span class="tn-ind" style="width:${depth * 16}px;flex-shrink:0;"></span>`;
                 h += subs.length ? `<span class="tn-tog" onclick="event.stopPropagation();edToggle('${node.id}')">${isExp ? '▼' : '▶'}</span>` : `<span class="tn-tog-ph"></span>`;
-                h += `<span class="tn-ico">📁</span><span class="tn-lbl" title="${esc(node.title)}">${esc(node.title)}</span><span class="tn-cnt">${cnt}</span></div>`;
+                h += `<span class="tn-ico">📁</span>`;
+                h += `<span class="tn-lbl" ondblclick="event.stopPropagation();edEditInline('${node.id}','title')" style="margin-left: 4px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px;">${esc(node.title)}</span>`;
+                h += `<span class="tn-cnt" style="margin-left: 8px;">${cnt}</span>`;
+                h += `</div>`;
                 if (isExp) subs.forEach(c => h += rNode(c, depth + 1));
                 return h;
             }
-            scroll.innerHTML = folders.map(n => rNode(n, 0)).join('');
+            scroll.innerHTML = h + folders.map(n => rNode(n, 1)).join('');
         }
 
         function edRenderBreadcrumb() {
@@ -1228,20 +1342,30 @@
             if (edSearch) { const q = edSearch.toLowerCase(); items = items.filter(i => i.title.toLowerCase().includes(q) || (i.url && i.url.toLowerCase().includes(q))); }
             if (!items.length) {
                 list.innerHTML = `<div class="ed-empty"><span class="big-ico">${edSearch ? '🔍' : '📭'}</span><span>${edSearch ? `「${esc(edSearch)}」の結果なし` : 'このフォルダは空です'}</span></div>`;
+                edUpdateSelectAllCheckbox();
+                document.getElementById('ed-btn-del-multi').style.display = 'none';
                 return;
             }
+            document.getElementById('ed-btn-del-multi').style.display = edSelection.size > 0 ? 'inline-block' : 'none';
             list.innerHTML = items.map((item, idx) => {
                 const first = idx === 0, last = idx === items.length - 1;
+                const isSel = edSelection.has(item.id);
+                const rowClick = `onclick="edToggleSelect('${item.id}', event)"`;
                 if (item.type === 'link') return `
-<div class="ci" data-id="${item.id}">
+<div class="ci${isSel ? ' selected' : ''}" data-id="${item.id}" draggable="true" ondragstart="edOnDragStart(event,'${item.id}')" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event,'${item.id}', 'content')" ${rowClick} ondblclick="edHandleRowDblClick('${item.id}')" style="cursor:pointer;">
+  <input type="checkbox" class="ci-chk" data-id="${item.id}" ${isSel ? 'checked' : ''} onclick="event.stopPropagation(); edToggleSelect('${item.id}', event, true)" style="margin-right: 8px; cursor: pointer; transform: scale(1.15);">
   <span class="ci-ico">🔗</span>
   <div class="ci-info">
-    <div class="ci-ttl" title="${esc(item.title)}" onclick="edEditInline('${item.id}','title')">${esc(item.title)}</div>
-    <div class="ci-url" title="${esc(item.url)}"   onclick="edEditInline('${item.id}','url')">${esc(item.url)}</div>
+    <div class="ci-ttl">
+      <a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor" ondblclick="event.stopPropagation(); edEditInline('${item.id}', 'title')">${esc(item.title)}</a>
+    </div>
+    <div class="ci-url" title="${esc(item.url)}">
+      <a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor-url" ondblclick="event.stopPropagation(); edEditInline('${item.id}', 'url')">${esc(item.url)}</a>
+    </div>
   </div>
   <div class="ci-acts">
-    <button class="ia-btn" onclick="edOpenModal('${item.id}')">✏️</button>
-    <button class="ia-btn ia-open" onclick="window.open('${esc(item.url)}','_blank')" ${!item.url ? 'disabled' : ''}>🔗</button>
+    <button class="ia-btn" onclick="event.stopPropagation(); edOpenModal('${item.id}')" title="編集">✏️</button>
+    <button class="ia-btn ia-open" onclick="event.stopPropagation(); window.open('${esc(item.url)}','_blank')" ${!item.url ? 'disabled' : ''}>🔗</button>
     <button class="ia-btn" onclick="edMove('${item.id}',-1)" ${first ? 'disabled' : ''}>↑</button>
     <button class="ia-btn" onclick="edMove('${item.id}',1)"  ${last ? 'disabled' : ''}>↓</button>
     <button class="ia-btn ia-del" onclick="edDelete('${item.id}')">🗑️</button>
@@ -1249,26 +1373,131 @@
 </div>`;
                 const lc = (item.children || []).reduce((s, c) => s + edCountLinks(c), 0), fc = (item.children || []).filter(c => c.type === 'folder').length;
                 return `
-<div class="ci" data-id="${item.id}" style="border-left:3px solid #e2e8f0;">
+<div class="ci${isSel ? ' selected' : ''}" data-id="${item.id}" style="border-left:3px solid #e2e8f0; cursor:pointer;" draggable="true" ondragstart="edOnDragStart(event,'${item.id}')" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event,'${item.id}', 'content')" ${rowClick} ondblclick="edHandleRowDblClick('${item.id}')">
+  <input type="checkbox" class="ci-chk" data-id="${item.id}" ${isSel ? 'checked' : ''} onclick="event.stopPropagation(); edToggleSelect('${item.id}', event, true)" style="margin-right: 8px; cursor: pointer; transform: scale(1.15);">
   <span class="ci-ico">📁</span>
   <div class="ci-info">
-    <div class="ci-ttl" title="${esc(item.title)}" onclick="edEditInline('${item.id}','title')">${esc(item.title)}</div>
+    <div class="ci-ttl" ondblclick="event.stopPropagation(); edEditInline('${item.id}', 'title')">${esc(item.title)}</div>
     <div class="ci-meta">${lc} リンク · ${fc} サブフォルダ</div>
   </div>
   <div class="ci-acts">
-    <button class="ia-btn ia-open" onclick="edOpenSub('${item.id}')">📂 開く</button>
-    <button class="ia-btn" onclick="edOpenModal('${item.id}')">✏️</button>
+    <button class="ia-btn ia-open" onclick="event.stopPropagation(); edOpenSub('${item.id}')" title="開く">📂</button>
+    <button class="ia-btn" onclick="event.stopPropagation(); edOpenModal('${item.id}')" title="編集">✏️</button>
     <button class="ia-btn" onclick="edMove('${item.id}',-1)" ${first ? 'disabled' : ''}>↑</button>
     <button class="ia-btn" onclick="edMove('${item.id}',1)"  ${last ? 'disabled' : ''}>↓</button>
     <button class="ia-btn ia-del" onclick="edDelete('${item.id}')">🗑️</button>
   </div>
 </div>`;
             }).join('');
+            edUpdateSelectAllCheckbox();
         }
 
         function edRenderAll() {
             edRenderTree(); edRenderBreadcrumb(); edRenderContent(); edUpdateStats();
             document.getElementById('ed-btn-export').disabled = edTree.length === 0;
+        }
+
+        // Selection & Interaction
+        function edToggleSelect(id, e, isCheckboxClick = false) {
+            const items = edCurrentItems();
+            if (isCheckboxClick) {
+                if (edSelection.has(id)) {
+                    edSelection.delete(id);
+                } else {
+                    edSelection.add(id);
+                    edLastSelectedId = id;
+                }
+            } else if (e && (e.shiftKey || e.ctrlKey || e.metaKey)) {
+                if (e.shiftKey && edLastSelectedId) {
+                    const idx1 = items.findIndex(i => i.id === edLastSelectedId);
+                    const idx2 = items.findIndex(i => i.id === id);
+                    if (idx1 !== -1 && idx2 !== -1) {
+                        const [start, end] = [Math.min(idx1, idx2), Math.max(idx1, idx2)];
+                        for (let i = start; i <= end; i++) edSelection.add(items[i].id);
+                    }
+                } else if (e.ctrlKey || e.metaKey) {
+                    edSelection.has(id) ? edSelection.delete(id) : edSelection.add(id);
+                    edLastSelectedId = id;
+                }
+            } else {
+                edSelection.clear();
+                edSelection.add(id);
+                edLastSelectedId = id;
+            }
+            edRenderContent();
+        }
+
+        function edUpdateSelectAllCheckbox() {
+            const chkAll = document.getElementById('ed-chk-all');
+            if (!chkAll) return;
+            const items = edCurrentItems();
+            if (!items.length) {
+                chkAll.checked = false;
+                chkAll.disabled = true;
+                return;
+            }
+            chkAll.disabled = false;
+            const allSelected = items.every(item => edSelection.has(item.id));
+            chkAll.checked = allSelected;
+        }
+
+        function edHandleRowDblClick(id) {
+            const n = edFind(id); if (!n) return;
+            if (n.type === 'folder') edOpenSub(id);
+            else if (n.url) window.open(n.url, '_blank');
+        }
+
+        // Drag & Drop reordering
+        function edOnDragStart(e, id) {
+            e.dataTransfer.setData('text/plain', id);
+            e.target.style.opacity = '0.5';
+            e.target.addEventListener('dragend', () => { e.target.style.opacity = '1'; }, { once: true });
+        }
+        function edOnDragOver(e) { e.preventDefault(); }
+        function edIsDescendant(parent, targetId) {
+            if (!parent.children) return false;
+            return parent.children.some(c => c.id === targetId || (c.type === 'folder' && edIsDescendant(c, targetId)));
+        }
+        function edOnDrop(e, targetId, targetType = 'content') {
+            e.preventDefault();
+            const draggedId = e.dataTransfer.getData('text/plain');
+            if (draggedId === targetId) return;
+
+            const draggedNode = edFind(draggedId);
+            if (!draggedNode) return;
+
+            const targetNode = targetId === null ? { id: null, type: 'folder', children: edTree } : edFind(targetId);
+
+            // 自身の配下への移動を禁止
+            if (draggedNode.type === 'folder' && targetId !== null && (draggedId === targetId || edIsDescendant(draggedNode, targetId))) {
+                edSetStatus("❌ 自身の配下へは移動できません"); return;
+            }
+
+            const sourceArr = edFindArr(draggedId);
+            const fromIdx = sourceArr.findIndex(n => n.id === draggedId);
+            if (fromIdx === -1) return;
+
+            if (targetType === 'tree') {
+                const [item] = sourceArr.splice(fromIdx, 1);
+                if (targetId === null) {
+                    edTree.push(item);
+                } else if (targetNode && targetNode.type === 'folder') {
+                    if (!targetNode.children) targetNode.children = [];
+                    targetNode.children.push(item);
+                }
+                edSetStatus(`✅ 「${draggedNode.title}」を移動しました`);
+            } else {
+                const targetArr = edCurrentItems();
+                const toIdx = targetArr.findIndex(n => n.id === targetId);
+                const [item] = sourceArr.splice(fromIdx, 1);
+                if (toIdx !== -1) {
+                    targetArr.splice(toIdx, 0, item);
+                } else {
+                    targetArr.push(item);
+                }
+                edSetStatus(`✅ 「${draggedNode.title}」を配置しました`);
+            }
+            edRenderAll();
         }
 
         // Navigation
@@ -1283,16 +1512,16 @@
         function edTreeClick(id) {
             edPath = edBuildPath(id) || [];
             edExpanded.add(id); edSearch = ''; document.getElementById('ed-search-input').value = '';
-            edRenderAll();
+            edSelection.clear(); edRenderAll();
         }
         function edSelectFolder(id) {
             if (id === null) { edPath = []; } else { edTreeClick(id); return; }
-            edSearch = ''; edRenderAll();
+            edSearch = ''; edSelection.clear(); edRenderAll();
         }
-        function edSelectByPath(idx) { edPath = edPath.slice(0, idx + 1); edSearch = ''; edRenderAll(); }
+        function edSelectByPath(idx) { edPath = edPath.slice(0, idx + 1); edSearch = ''; edSelection.clear(); edRenderAll(); }
         function edOpenSub(id) {
             const n = edFind(id); if (!n || n.type !== 'folder') return;
-            edPath = [...edPath, { id: n.id, title: n.title }]; edExpanded.add(id); edSearch = ''; edRenderAll();
+            edPath = [...edPath, { id: n.id, title: n.title }]; edExpanded.add(id); edSearch = ''; edSelection.clear(); edRenderAll();
         }
         function edToggle(id) { edExpanded.has(id) ? edExpanded.delete(id) : edExpanded.add(id); edRenderTree(); }
 
@@ -1328,20 +1557,20 @@
         }
         function edEditInline(id, field) {
             const n = edFind(id); if (!n) return;
-            const ci = document.querySelector(`.ci[data-id="${id}"]`); if (!ci) return;
-            const sel = field === 'title' ? '.ci-ttl' : '.ci-url';
-            const el = ci.querySelector(sel); if (!el) return;
+            const el = document.querySelector(`.ci[data-id="${id}"], .tn[data-id="${id}"]`); if (!el) return;
+            const sel = field === 'title' ? '.ci-ttl, .tn-lbl-wp, .tn-lbl' : '.ci-url';
+            const targetEl = el.querySelector(sel); if (!targetEl) return;
             const inp = document.createElement('input');
             inp.className = 'ci-edit-input' + (field === 'url' ? ' url-inp' : '');
             inp.value = field === 'title' ? n.title : n.url || '';
             if (field === 'url') inp.type = 'url';
-            el.replaceWith(inp); inp.focus(); inp.select();
+            targetEl.replaceWith(inp); inp.focus(); inp.select();
             const save = () => {
                 if (field === 'title') { n.title = inp.value.trim() || n.title; const s = edPath.find(x => x.id === id); if (s) s.title = n.title; }
-                else n.url = inp.value.trim();
+                else n.url = cleanUrl(inp.value.trim());
                 edRenderAll(); edSetStatus('✅ 更新しました');
             };
-            inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') edRenderContent(); });
+            inp.addEventListener('keydown', e => { if (e.key === 'Enter') save(); if (e.key === 'Escape') edRenderAll(); });
             inp.addEventListener('blur', save);
         }
 
@@ -1358,7 +1587,7 @@
         function edSaveModal() {
             if (!edEditingId) return; const n = edFind(edEditingId); if (!n) return;
             const t = document.getElementById('ed-m-name').value.trim(); if (t) n.title = t;
-            if (n.type === 'link') n.url = document.getElementById('ed-m-url').value.trim();
+            if (n.type === 'link') n.url = cleanUrl(document.getElementById('ed-m-url').value.trim());
             if (n.type === 'folder') { const s = edPath.find(x => x.id === edEditingId); if (s) s.title = n.title; }
             edCloseModal(); edRenderAll(); edSetStatus('✅ 保存しました');
         }
@@ -1370,7 +1599,7 @@
             const r = new FileReader();
             r.onload = e => {
                 try {
-                    edTree = edParse(e.target.result); edPath = []; edExpanded.clear(); edSearch = '';
+                    edTree = edParse(e.target.result); edPath = []; edExpanded.clear(); edSearch = ''; edSelection.clear();
                     edTree.filter(n => n.type === 'folder').forEach(n => edExpanded.add(n.id));
                     edRenderAll(); edSetStatus(`✅ 「${file.name}」を読み込みました`);
                 } catch (err) { edSetStatus(`❌ エラー: ${err.message}`); }
@@ -1395,6 +1624,11 @@
         document.getElementById('ed-btn-add-root').addEventListener('click', edAddRoot);
         document.getElementById('ed-m-save').addEventListener('click', edSaveModal);
         document.getElementById('ed-m-cancel').addEventListener('click', edCloseModal);
+        document.getElementById('ed-btn-del-multi').addEventListener('click', edDeleteSelected);
+        document.getElementById('ed-btn-scroll-top').addEventListener('click', () => { document.getElementById('ed-content-list').scrollTop = 0; });
+        document.getElementById('ed-btn-scroll-bottom').addEventListener('click', () => { const el = document.getElementById('ed-content-list'); el.scrollTop = el.scrollHeight; });
+        document.getElementById('ed-btn-tree-scroll-top').addEventListener('click', () => { document.getElementById('ed-tree-scroll').scrollTop = 0; });
+        document.getElementById('ed-btn-tree-scroll-bottom').addEventListener('click', () => { const el = document.getElementById('ed-tree-scroll'); el.scrollTop = el.scrollHeight; });
         document.getElementById('ed-modal').addEventListener('click', e => { if (e.target === document.getElementById('ed-modal')) edCloseModal(); });
         document.getElementById('ed-btn-search').addEventListener('click', () => {
             const bar = document.getElementById('ed-search-bar'); bar.classList.toggle('show');
@@ -1402,6 +1636,15 @@
             else { edSearch = ''; document.getElementById('ed-search-input').value = ''; edRenderContent(); }
         });
         document.getElementById('ed-search-input').addEventListener('input', e => { edSearch = e.target.value; edRenderContent(); });
+        document.getElementById('ed-chk-all').addEventListener('change', e => {
+            const items = edCurrentItems();
+            if (e.target.checked) {
+                items.forEach(item => edSelection.add(item.id));
+            } else {
+                items.forEach(item => edSelection.delete(item.id));
+            }
+            edRenderContent();
+        });
         document.addEventListener('keydown', e => {
             if (document.getElementById('ed-modal').classList.contains('show')) {
                 if (e.key === 'Escape') edCloseModal();
@@ -1426,6 +1669,67 @@
 
         // ── Shared utility ──
         function esc(s) { return s ? s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : ''; }
+        function cleanUrl(u) {
+            if (!u) return '';
+            try {
+                let url = new URL(u);
+                const p = url.searchParams;
+
+                // 一般的なトラッキングパラメータ
+                const commonParams = [
+                    'utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content',
+                    'fbclid', 'gclid', 'ref', 's', 'ref_src', 'ref_url', 'ncid', 'msclkid',
+                    '_hsenc', '_hsmi', 'mc_cid', 'mc_eid', 'igshid', 'si', 'feature',
+                    'yclid', 'dclid', 'gclsrc', 'gbraid', 'wbraid', 'r', 'source',
+                    'utm_id', 'utm_referrer', 'utm_content', 'utm_matchtype', 'utm_network',
+                    'fbclid', 'twclid', 'li_kfid', 'mc_cid', 'mc_eid', 'sc_exp', 'sc_llid'
+                ];
+                commonParams.forEach(k => p.delete(k));
+                Array.from(p.keys()).forEach(k => { if (/^utm_|^fb_|.*clid$|_hs|_mc|ref_/.test(k)) p.delete(k); });
+
+                // サイト固有の最適化
+                const host = url.hostname.replace(/^www\./, '');
+                if (host.includes('google.') && url.pathname.includes('/search')) {
+                    const keep = ['q', 'tbm', 'tbs', 'start', 'num', 'hl', 'gl', 'lr', 'trm'];
+                    ['sa', 'ei', 'ved', 'oq', 'gs_lcp', 'uact', 'gs_qi', 'gs_upl', 'p', 'biw', 'bih', 'dpr', 'sclient', 'safe', 'nfpr'].forEach(k => p.delete(k));
+                    Array.from(p.keys()).forEach(k => { if (!keep.includes(k)) p.delete(k); });
+                } else if (host.includes('amazon.')) {
+                    const match = url.pathname.match(/\/dp\/([A-Z0-9]{10})/);
+                    if (match) return `${url.origin}/dp/${match[1]}`;
+                } else if (host.includes('youtube.com') || host.includes('youtu.be')) {
+                    if (url.pathname === '/watch' || url.pathname.includes('/embed/')) {
+                        ['t', 'list', 'index'].forEach(k => { if (p.has(k)) return; });
+                        const vMatch = url.search.match(/[?&]v=([^&]+)/);
+                        if (vMatch) return `${url.origin}/watch?v=${vMatch[1]}`;
+                    }
+                    ['channel_id', 'pbj', 'has_ads', 'live_dai', 'csi', 'adct', 'adcid', 'client_range', 'player_id'].forEach(k => p.delete(k));
+                } else if (host.includes('twitter.com') || host.includes('x.com')) {
+                    const match = url.pathname.match(/\/status\/(\d+)/);
+                    if (match) return `${url.origin}${url.pathname.split('?')[0]}`;
+                    ['s', 't', 'lang', 'mx', 'tw', 'ref', 'fbclid', 'gclid'].forEach(k => p.delete(k));
+                } else if (host.includes('reddit.com')) {
+                    const match = url.pathname.match(/\/comments\/([a-z0-9]+)/);
+                    if (match) return `${url.origin}${url.pathname.split('?')[0]}`;
+                } else if (host.includes('facebook.com') || host.includes('fb.me')) {
+                    ['id', 'ref', 'fbclid', 'gclid'].forEach(k => p.delete(k));
+                } else if (host.includes('instagram.com')) {
+                    ['igshid', '__co', '__cp', '_i'].forEach(k => p.delete(k));
+                } else if (host.includes('linkedin.com')) {
+                    ['trk', 'trkEmail', 'lipi', 'mc', 'hash', 'auth', 'ref', 'fbclid'].forEach(k => p.delete(k));
+                } else if (host.includes('microsoft.com') || host.includes('live.com') || host.includes('office.com') || host.includes('microsoftonline.com')) {
+                    ['clcid', 'lptid', 'auth', 'ref', 'wtc', 'wts', 'mkt', 'pc', 'params', 'culture', 'usg', 'origin'].forEach(k => p.delete(k));
+                    if (url.hash && url.hash.length > 100) url.hash = '';
+                } else if (host.includes('apple.com')) {
+                    ['i', 'sd', 'sp', 'uo', 'cid', 'referrer', 'fbclid', 'gclid', 'ref'].forEach(k => p.delete(k));
+                } else if (host.includes('bing.com') || host.includes('microsofttranslator.com')) {
+                    ['cvid', 'aq', 'qs', 'form', 'sp', 'sc', 'kf', 'pc', 'biw', 'bih', 'dpr', 'ex', 'first', 'sort', 'view', 'mstcu', 'mstcat', 'msidt', 'msct', 'mset', 'pl', 'qj', 'ref', 'seg'].forEach(k => p.delete(k));
+                } else if (host.includes('yahoo.com') || host.includes('yahoo.co')) {
+                    ['fr', 'b', 'xargs', 'ref', 'fbclid', 'gclid'].forEach(k => p.delete(k));
+                }
+
+                return url.toString().replace(/\?$/, '').replace(/\/$/, '');
+            } catch (e) { return u; }
+        }
 
         // Init
         edRenderAll();
