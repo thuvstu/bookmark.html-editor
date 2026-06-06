@@ -963,6 +963,81 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #a0aec0;
         }
+
+        /* ── DnD ドロップ位置インジケータ ── */
+        .ci.dnd-before {
+            border-top: 3px solid #0056b3 !important;
+        }
+
+        .ci.dnd-after {
+            border-bottom: 3px solid #0056b3 !important;
+        }
+
+        .ci.dnd-into {
+            background: #dbeafe !important;
+            border-color: #0056b3 !important;
+        }
+
+        .tn.dnd-into {
+            background: #dbeafe !important;
+        }
+
+        /* ── 検索結果フォルダパス表示 ── */
+        .ci-path {
+            font-size: 10px;
+            color: #a0aec0;
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .ci-path .path-sep {
+            margin: 0 3px;
+            color: #cbd5e0;
+        }
+
+        /* ── 検索スコープ切り替え ── */
+        .scope-grp {
+            display: flex;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .scope-btn {
+            padding: 3px 9px;
+            border: none;
+            background: white;
+            font-size: 11px;
+            font-weight: 700;
+            color: #718096;
+            cursor: pointer;
+            transition: 0.12s;
+        }
+
+        .scope-btn.on {
+            background: #0056b3;
+            color: white;
+        }
+
+        .scope-btn:not(.on):hover {
+            background: #f0f4f8;
+        }
+
+        /* ── ホバー時トランジション強化 ── */
+        .ci {
+            transition: box-shadow 0.12s, border-color 0.12s, background 0.1s;
+        }
+
+        .tn {
+            transition: background 0.08s;
+        }
+
+        .ia-btn {
+            transition: background 0.1s, color 0.1s;
+        }
     </style>
 </head>
 
@@ -1068,7 +1143,13 @@
                         </div>
                     </div>
                     <div id="ed-search-bar">
-                        <input type="text" id="ed-search-input" placeholder="タイトル・URLで検索...">
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <input type="text" id="ed-search-input" placeholder="タイトル・URLで検索..." style="flex:1;">
+                            <div class="scope-grp">
+                                <button class="scope-btn on" id="scope-all" onclick="edSetScope(true)">全体</button>
+                                <button class="scope-btn" id="scope-cur" onclick="edSetScope(false)">現在</button>
+                            </div>
+                        </div>
                     </div>
                     <div id="ed-content-list">
                         <div class="ed-empty"><span class="big-ico">📚</span><span>ファイルをインポートして開始<br><small
@@ -1115,6 +1196,54 @@
         </div>
     </div>
     <script>
+
+        // ── 全ツリーを再帰検索して {node, pathArr} を返す ──────────────────
+        function edCollectSearchResults(q) {
+            const lq = q.toLowerCase(), results = [];
+            function walk(nodes, path) {
+                for (const n of nodes) {
+                    if (n.title.toLowerCase().includes(lq) ||
+                        (n.type === 'link' && n.url.toLowerCase().includes(lq))) {
+                        results.push({ node: n, path: path.slice() });
+                    }
+                    if (n.children?.length) walk(n.children, [...path, n.title]);
+                }
+            }
+            walk(edTree, []);
+            return results;
+        }
+
+        // ── 検索結果から該当アイテムのある親フォルダへ移動 ─────────────────
+        function edGoToFolder(itemId) {
+            function findPath(nodes, tid, acc) {
+                for (const n of nodes) {
+                    if (n.id === tid) return acc;
+                    if (n.children) {
+                        const r = findPath(n.children, tid, [...acc, { id: n.id, title: n.title }]);
+                        if (r !== null) return r;
+                    }
+                }
+                return null;
+            }
+            const path = findPath(edTree, itemId, []);
+            if (path === null) return;
+            edPath = path;
+            edSearch = '';
+            document.getElementById('ed-search-input').value = '';
+            edRenderAll();
+            setTimeout(() => {
+                const el = document.querySelector(`#ed-content-list .ci[data-id="${itemId}"]`);
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 80);
+        }
+
+        // ── スコープ切り替え ──────────────────────────────────────────────
+        function edSetScope(deep) {
+            edSearchDeep = deep;
+            document.getElementById('scope-all').classList.toggle('on', deep);
+            document.getElementById('scope-cur').classList.toggle('on', !deep);
+            if (edSearch) edRenderContent();
+        }
         // ═══════════════════════════════════════════════════════════════
         //  Tab Switching
         // ═══════════════════════════════════════════════════════════════
@@ -1224,7 +1353,10 @@
         //  EDITOR
         // ═══════════════════════════════════════════════════════════════
         let edTree = [], edPath = [], edExpanded = new Set(), edIdCtr = 0, edEditingId = null, edSearch = '', edSelection = new Set(), edLastSelectedId = null;
-
+        let edSearchDeep = true;   // true=全体検索 / false=現フォルダのみ
+        let edSearchTimer = null;   // debounce timer
+        let edDndPos = null;   // 'before' | 'after' | 'into'
+        let edRafId = null;   // requestAnimationFrame id
         const edSetStatus = msg => document.getElementById('ed-sb-msg').textContent = msg;
 
         function edGenId() { return 'bm_' + (++edIdCtr); }
@@ -1358,51 +1490,110 @@
             const list = document.getElementById('ed-content-list');
             document.getElementById('ed-btn-add-link').disabled = false;
             document.getElementById('ed-btn-add-folder').disabled = false;
+
+            // ── 全体検索モード ─────────────────────────────────────────
+            if (edSearch && edSearchDeep) {
+                const results = edCollectSearchResults(edSearch);
+                document.getElementById('ed-btn-del-multi').style.display = edSelection.size ? 'inline-block' : 'none';
+                if (!results.length) {
+                    list.innerHTML = `<div class="ed-empty"><span class="big-ico">🔍</span><span>「${esc(edSearch)}」の結果なし（全フォルダ検索）</span></div>`;
+                    edUpdateSelectAllCheckbox(); return;
+                }
+                list.innerHTML = results.map(({ node: n, path }) => {
+                    const sel = edSelection.has(n.id);
+                    const pathHtml = (path.length ? path : ['Root']).map(esc).join('<span class="path-sep">›</span>');
+                    if (n.type === 'link') return `
+<div class="ci${sel ? ' selected' : ''}" data-id="${n.id}"
+  onclick="edToggleSelect('${n.id}',event)"
+  ondblclick="edHandleRowDblClick('${n.id}')" style="cursor:pointer;">
+  <input type="checkbox" class="ci-chk" data-id="${n.id}" ${sel ? 'checked' : ''} onclick="event.stopPropagation();edToggleSelect('${n.id}',event,true)" style="margin-right:8px;cursor:pointer;transform:scale(1.15);">
+  <span class="ci-ico">🔗</span>
+  <div class="ci-info">
+    <div class="ci-ttl"><a href="${esc(n.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor" ondblclick="event.stopPropagation();edEditInline('${n.id}','title')">${esc(n.title)}</a></div>
+    <div class="ci-path">📁 ${pathHtml}</div>
+  </div>
+  <div class="ci-acts">
+    <button class="ia-btn" onclick="event.stopPropagation();edGoToFolder('${n.id}')" title="フォルダを開く">📂</button>
+    <button class="ia-btn ia-open" onclick="event.stopPropagation();window.open('${esc(n.url)}','_blank')" ${!n.url ? 'disabled' : ''}>🔗</button>
+    <button class="ia-btn" onclick="event.stopPropagation();edOpenModal('${n.id}')">✏️</button>
+    <button class="ia-btn ia-del" onclick="edDelete('${n.id}')">🗑️</button>
+  </div>
+</div>`;
+                    const lc = edCountLinks(n);
+                    return `
+<div class="ci${sel ? ' selected' : ''}" data-id="${n.id}"
+  style="border-left:3px solid #e2e8f0;cursor:pointer;"
+  onclick="edToggleSelect('${n.id}',event)"
+  ondblclick="edHandleRowDblClick('${n.id}')">
+  <input type="checkbox" class="ci-chk" data-id="${n.id}" ${sel ? 'checked' : ''} onclick="event.stopPropagation();edToggleSelect('${n.id}',event,true)" style="margin-right:8px;cursor:pointer;transform:scale(1.15);">
+  <span class="ci-ico">📁</span>
+  <div class="ci-info">
+    <div class="ci-ttl">${esc(n.title)}</div>
+    <div class="ci-path">📁 ${pathHtml} &nbsp;•&nbsp; ${lc} リンク</div>
+  </div>
+  <div class="ci-acts">
+    <button class="ia-btn ia-open" onclick="event.stopPropagation();edOpenSub('${n.id}')">📂</button>
+    <button class="ia-btn" onclick="event.stopPropagation();edOpenModal('${n.id}')">✏️</button>
+    <button class="ia-btn ia-del" onclick="edDelete('${n.id}')">🗑️</button>
+  </div>
+</div>`;
+                }).join('');
+                edUpdateSelectAllCheckbox(); return;
+            }
+
+            // ── 通常 / 現フォルダ検索モード ────────────────────────────
             let items = edCurrentItems();
-            if (edSearch) { const q = edSearch.toLowerCase(); items = items.filter(i => i.title.toLowerCase().includes(q) || (i.url && i.url.toLowerCase().includes(q))); }
+            if (edSearch) {
+                const q = edSearch.toLowerCase();
+                items = items.filter(i => i.title.toLowerCase().includes(q) ||
+                    (i.url && i.url.toLowerCase().includes(q)));
+            }
             if (!items.length) {
                 list.innerHTML = `<div class="ed-empty"><span class="big-ico">${edSearch ? '🔍' : '📭'}</span><span>${edSearch ? `「${esc(edSearch)}」の結果なし` : 'このフォルダは空です'}</span></div>`;
                 edUpdateSelectAllCheckbox();
                 document.getElementById('ed-btn-del-multi').style.display = 'none';
                 return;
             }
-            document.getElementById('ed-btn-del-multi').style.display = edSelection.size > 0 ? 'inline-block' : 'none';
+
+            document.getElementById('ed-btn-del-multi').style.display = edSelection.size ? 'inline-block' : 'none';
+
             list.innerHTML = items.map((item, idx) => {
-                const first = idx === 0, last = idx === items.length - 1;
-                const isSel = edSelection.has(item.id);
-                const rowClick = `onclick="edToggleSelect('${item.id}', event)"`;
+                const first = idx === 0, last = idx === items.length - 1, isSel = edSelection.has(item.id);
+                const dnd = `draggable="true" ondragstart="edOnDragStart(event,'${item.id}')" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event,'${item.id}','content')"`;
                 if (item.type === 'link') return `
-<div class="ci${isSel ? ' selected' : ''}" data-id="${item.id}" draggable="true" ondragstart="edOnDragStart(event,'${item.id}')" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event,'${item.id}', 'content')" ${rowClick} ondblclick="edHandleRowDblClick('${item.id}')" style="cursor:pointer;">
-  <input type="checkbox" class="ci-chk" data-id="${item.id}" ${isSel ? 'checked' : ''} onclick="event.stopPropagation(); edToggleSelect('${item.id}', event, true)" style="margin-right: 8px; cursor: pointer; transform: scale(1.15);">
+<div class="ci${isSel ? ' selected' : ''}" data-id="${item.id}" ${dnd}
+  onclick="edToggleSelect('${item.id}',event)"
+  ondblclick="edHandleRowDblClick('${item.id}')" style="cursor:pointer;">
+  <input type="checkbox" class="ci-chk" data-id="${item.id}" ${isSel ? 'checked' : ''} onclick="event.stopPropagation();edToggleSelect('${item.id}',event,true)" style="margin-right:8px;cursor:pointer;transform:scale(1.15);">
   <span class="ci-ico">🔗</span>
   <div class="ci-info">
-    <div class="ci-ttl">
-      <a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor" ondblclick="event.stopPropagation(); edEditInline('${item.id}', 'title')">${esc(item.title)}</a>
-    </div>
-    <div class="ci-url" title="${esc(item.url)}">
-      <a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor-url" ondblclick="event.stopPropagation(); edEditInline('${item.id}', 'url')">${esc(item.url)}</a>
-    </div>
+    <div class="ci-ttl"><a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor" ondblclick="event.stopPropagation();edEditInline('${item.id}','title')">${esc(item.title)}</a></div>
+    <div class="ci-url" title="${esc(item.url)}"><a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()" class="ci-link-anchor-url" ondblclick="event.stopPropagation();edEditInline('${item.id}','url')">${esc(item.url)}</a></div>
   </div>
   <div class="ci-acts">
-    <button class="ia-btn" onclick="event.stopPropagation(); edOpenModal('${item.id}')" title="編集">✏️</button>
-    <button class="ia-btn ia-open" onclick="event.stopPropagation(); window.open('${esc(item.url)}','_blank')" ${!item.url ? 'disabled' : ''}>🔗</button>
+    <button class="ia-btn" onclick="event.stopPropagation();edOpenModal('${item.id}')">✏️</button>
+    <button class="ia-btn ia-open" onclick="event.stopPropagation();window.open('${esc(item.url)}','_blank')" ${!item.url ? 'disabled' : ''}>🔗</button>
     <button class="ia-btn" onclick="edMove('${item.id}',-1)" ${first ? 'disabled' : ''}>↑</button>
     <button class="ia-btn" onclick="edMove('${item.id}',1)"  ${last ? 'disabled' : ''}>↓</button>
     <button class="ia-btn ia-del" onclick="edDelete('${item.id}')">🗑️</button>
   </div>
 </div>`;
-                const lc = (item.children || []).reduce((s, c) => s + edCountLinks(c), 0), fc = (item.children || []).filter(c => c.type === 'folder').length;
+                const lc = (item.children || []).reduce((s, c) => s + edCountLinks(c), 0);
+                const fc = (item.children || []).filter(c => c.type === 'folder').length;
                 return `
-<div class="ci${isSel ? ' selected' : ''}" data-id="${item.id}" style="border-left:3px solid #e2e8f0; cursor:pointer;" draggable="true" ondragstart="edOnDragStart(event,'${item.id}')" ondragover="edOnDragOver(event)" ondrop="edOnDrop(event,'${item.id}', 'content')" ${rowClick} ondblclick="edHandleRowDblClick('${item.id}')">
-  <input type="checkbox" class="ci-chk" data-id="${item.id}" ${isSel ? 'checked' : ''} onclick="event.stopPropagation(); edToggleSelect('${item.id}', event, true)" style="margin-right: 8px; cursor: pointer; transform: scale(1.15);">
+<div class="ci${isSel ? ' selected' : ''}" data-id="${item.id}" ${dnd}
+  style="border-left:3px solid #e2e8f0;cursor:pointer;"
+  onclick="edToggleSelect('${item.id}',event)"
+  ondblclick="edHandleRowDblClick('${item.id}')">
+  <input type="checkbox" class="ci-chk" data-id="${item.id}" ${isSel ? 'checked' : ''} onclick="event.stopPropagation();edToggleSelect('${item.id}',event,true)" style="margin-right:8px;cursor:pointer;transform:scale(1.15);">
   <span class="ci-ico">📁</span>
   <div class="ci-info">
-    <div class="ci-ttl" ondblclick="event.stopPropagation(); edEditInline('${item.id}', 'title')">${esc(item.title)}</div>
+    <div class="ci-ttl" ondblclick="event.stopPropagation();edEditInline('${item.id}','title')">${esc(item.title)}</div>
     <div class="ci-meta">${lc} リンク · ${fc} サブフォルダ</div>
   </div>
   <div class="ci-acts">
-    <button class="ia-btn ia-open" onclick="event.stopPropagation(); edOpenSub('${item.id}')" title="開く">📂</button>
-    <button class="ia-btn" onclick="event.stopPropagation(); edOpenModal('${item.id}')" title="編集">✏️</button>
+    <button class="ia-btn ia-open" onclick="event.stopPropagation();edOpenSub('${item.id}')" title="開く">📂</button>
+    <button class="ia-btn" onclick="event.stopPropagation();edOpenModal('${item.id}')">✏️</button>
     <button class="ia-btn" onclick="edMove('${item.id}',-1)" ${first ? 'disabled' : ''}>↑</button>
     <button class="ia-btn" onclick="edMove('${item.id}',1)"  ${last ? 'disabled' : ''}>↓</button>
     <button class="ia-btn ia-del" onclick="edDelete('${item.id}')">🗑️</button>
@@ -1413,38 +1604,51 @@
         }
 
         function edRenderAll() {
-            edRenderTree(); edRenderBreadcrumb(); edRenderContent(); edUpdateStats();
-            document.getElementById('ed-btn-export').disabled = edTree.length === 0;
+            if (edRafId) return;
+            edRafId = requestAnimationFrame(() => {
+                edRafId = null;
+                edRenderTree(); edRenderBreadcrumb(); edRenderContent(); edUpdateStats();
+                document.getElementById('ed-btn-export').disabled = edTree.length === 0;
+            });
         }
 
         // Selection & Interaction
+        // ── 選択状態のDOM更新のみ (re-render しない) ──────────────────
+        function edUpdateSelectionUI() {
+            document.querySelectorAll('#ed-content-list .ci[data-id]').forEach(el => {
+                const sel = edSelection.has(el.dataset.id);
+                el.classList.toggle('selected', sel);
+                const chk = el.querySelector('.ci-chk');
+                if (chk) chk.checked = sel;
+            });
+            const show = edSelection.size > 0;
+            document.getElementById('ed-btn-del-multi').style.display = show ? 'inline-block' : 'none';
+            edUpdateSelectAllCheckbox();
+        }
+
+        // ── edToggleSelect 置き換え ────────────────────────────────────
         function edToggleSelect(id, e, isCheckboxClick = false) {
             const items = edCurrentItems();
             if (isCheckboxClick) {
-                if (edSelection.has(id)) {
-                    edSelection.delete(id);
-                } else {
-                    edSelection.add(id);
-                    edLastSelectedId = id;
+                edSelection.has(id) ? edSelection.delete(id) : edSelection.add(id);
+                edLastSelectedId = id;
+            } else if (e?.shiftKey && edLastSelectedId) {
+                const i1 = items.findIndex(i => i.id === edLastSelectedId);
+                const i2 = items.findIndex(i => i.id === id);
+                if (i1 !== -1 && i2 !== -1) {
+                    const [s, en] = [Math.min(i1, i2), Math.max(i1, i2)];
+                    for (let i = s; i <= en; i++) edSelection.add(items[i].id);
                 }
-            } else if (e && (e.shiftKey || e.ctrlKey || e.metaKey)) {
-                if (e.shiftKey && edLastSelectedId) {
-                    const idx1 = items.findIndex(i => i.id === edLastSelectedId);
-                    const idx2 = items.findIndex(i => i.id === id);
-                    if (idx1 !== -1 && idx2 !== -1) {
-                        const [start, end] = [Math.min(idx1, idx2), Math.max(idx1, idx2)];
-                        for (let i = start; i <= end; i++) edSelection.add(items[i].id);
-                    }
-                } else if (e.ctrlKey || e.metaKey) {
-                    edSelection.has(id) ? edSelection.delete(id) : edSelection.add(id);
-                    edLastSelectedId = id;
-                }
+            } else if (e?.ctrlKey || e?.metaKey) {
+                edSelection.has(id) ? edSelection.delete(id) : edSelection.add(id);
+                edLastSelectedId = id;
             } else {
                 edSelection.clear();
                 edSelection.add(id);
                 edLastSelectedId = id;
             }
-            edRenderContent();
+            // ← full re-render ではなく class toggle のみ
+            edUpdateSelectionUI();
         }
 
         function edUpdateSelectAllCheckbox() {
@@ -1470,59 +1674,81 @@
         // Drag & Drop reordering
         function edOnDragStart(e, id) {
             e.dataTransfer.setData('text/plain', id);
-            e.target.style.opacity = '0.5';
-            e.target.addEventListener('dragend', () => { e.target.style.opacity = '1'; }, { once: true });
+            e.target.style.opacity = '0.4';
+            e.target.addEventListener('dragend', () => {
+                e.target.style.opacity = '1';
+                document.querySelectorAll('.dnd-before,.dnd-after,.dnd-into')
+                    .forEach(el => el.classList.remove('dnd-before', 'dnd-after', 'dnd-into'));
+                edDndPos = null;
+            }, { once: true });
         }
+
         function edOnDragOver(e) {
             e.preventDefault();
-            // 前の強調を消す
-            document.querySelectorAll('.dnd-over').forEach(el => el.classList.remove('dnd-over'));
-            // 最も近い .ci か .tn を強調
-            const target = e.target.closest('.ci, .tn');
-            if (target) target.classList.add('dnd-over');
+            document.querySelectorAll('.dnd-before,.dnd-after,.dnd-into')
+                .forEach(el => el.classList.remove('dnd-before', 'dnd-after', 'dnd-into'));
+
+            const ci = e.target.closest('#ed-content-list .ci');
+            const tn = e.target.closest('#ed-tree-scroll .tn');
+
+            if (ci) {
+                const rect = ci.getBoundingClientRect();
+                const rel = (e.clientY - rect.top) / rect.height;
+                const node = edFind(ci.dataset.id);
+                if (node?.type === 'folder' && rel > 0.25 && rel < 0.75) {
+                    ci.classList.add('dnd-into'); edDndPos = 'into';
+                } else {
+                    const pos = rel < 0.5 ? 'before' : 'after';
+                    ci.classList.add(`dnd-${pos}`); edDndPos = pos;
+                }
+            } else if (tn) {
+                tn.classList.add('dnd-into'); edDndPos = 'into';
+            }
         }
 
         function edOnDrop(e, targetId, targetType = 'content') {
             e.preventDefault();
-            document.querySelectorAll('.dnd-over').forEach(el => el.classList.remove('dnd-over'));
+            document.querySelectorAll('.dnd-before,.dnd-after,.dnd-into')
+                .forEach(el => el.classList.remove('dnd-before', 'dnd-after', 'dnd-into'));
+            const pos = edDndPos; edDndPos = null;
+
             const draggedId = e.dataTransfer.getData('text/plain');
-            if (draggedId === targetId) return;
+            if (!draggedId || draggedId === targetId) return;
 
             const draggedNode = edFind(draggedId);
             if (!draggedNode) return;
+            const targetNode = targetId === null
+                ? { id: null, type: 'folder', children: edTree }
+                : edFind(targetId);
 
-            const targetNode = targetId === null ? { id: null, type: 'folder', children: edTree } : edFind(targetId);
-
-            // 自身の配下への移動を禁止
-            if (draggedNode.type === 'folder' && targetId !== null && (draggedId === targetId || edIsDescendant(draggedNode, targetId))) {
-                edSetStatus("❌ 自身の配下へは移動できません"); return;
+            if (draggedNode.type === 'folder' && targetId !== null &&
+                (draggedId === targetId || edIsDescendant(draggedNode, targetId))) {
+                edSetStatus('❌ 自身の配下へは移動できません'); return;
             }
 
-            const sourceArr = edFindArr(draggedId);
-            const fromIdx = sourceArr.findIndex(n => n.id === draggedId);
-            if (fromIdx === -1) return;
+            const srcArr = edFindArr(draggedId);
+            const fromIdx = srcArr?.findIndex(n => n.id === draggedId) ?? -1;
+            if (!srcArr || fromIdx === -1) return;
 
             if (targetType === 'tree') {
-                const [item] = sourceArr.splice(fromIdx, 1);
-                if (targetId === null) {
-                    edTree.push(item);
-                } else if (targetNode && targetNode.type === 'folder') {
-                    if (!targetNode.children) targetNode.children = [];
-                    targetNode.children.push(item);
-                }
-                edSetStatus(`✅ 「${draggedNode.title}」を移動しました`);
+                const [item] = srcArr.splice(fromIdx, 1);
+                if (targetId === null) edTree.push(item);
+                else if (targetNode?.type === 'folder') (targetNode.children ??= []).push(item);
+            } else if (pos === 'into' && targetNode?.type === 'folder') {
+                const [item] = srcArr.splice(fromIdx, 1);
+                (targetNode.children ??= []).push(item);
             } else {
-                const targetArr = edCurrentItems();
-                const toIdx = targetArr.findIndex(n => n.id === targetId);
-                const [item] = sourceArr.splice(fromIdx, 1);
-                if (toIdx !== -1) {
-                    targetArr.splice(toIdx, 0, item);
-                } else {
-                    targetArr.push(item);
+                const tArr = edFindArr(targetId) ?? edCurrentItems();
+                let toIdx = tArr.findIndex(n => n.id === targetId);
+                const [item] = srcArr.splice(fromIdx, 1);
+                if (toIdx === -1) { tArr.push(item); }
+                else {
+                    if (srcArr === tArr && fromIdx < toIdx) toIdx--;
+                    tArr.splice(pos === 'after' ? toIdx + 1 : toIdx, 0, item);
                 }
-                edSetStatus(`✅ 「${draggedNode.title}」を配置しました`);
             }
             edRenderAll();
+            edSetStatus(`✅ 「${draggedNode.title}」を移動しました`);
         }
 
         // Navigation
@@ -1696,8 +1922,13 @@
             if (bar.classList.contains('show')) document.getElementById('ed-search-input').focus();
             else { edSearch = ''; document.getElementById('ed-search-input').value = ''; edRenderContent(); }
         });
-        document.getElementById('ed-search-input').addEventListener('input', e => { edSearch = e.target.value; edRenderContent(); });
-        document.getElementById('ed-chk-all').addEventListener('change', e => {
+        document.getElementById('ed-search-input').addEventListener('input', e => {
+            clearTimeout(edSearchTimer);
+            edSearchTimer = setTimeout(() => {
+                edSearch = e.target.value.trim();
+                edRenderContent();
+            }, 120);
+        }); document.getElementById('ed-chk-all').addEventListener('change', e => {
             const items = edCurrentItems();
             if (e.target.checked) {
                 items.forEach(item => edSelection.add(item.id));
@@ -1715,19 +1946,26 @@
             if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
             if (!document.getElementById('tab-editor').classList.contains('active')) return;
 
-            // Ctrl+A: 全選択
             if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
                 e.preventDefault();
                 edCurrentItems().forEach(n => edSelection.add(n.id));
-                edRenderContent();
+                edUpdateSelectionUI();
             }
-            // Delete: 選択削除
             if (e.key === 'Delete' && edSelection.size > 0) edDeleteSelected();
-            // Escape: 選択解除
-            if (e.key === 'Escape' && edSelection.size > 0) {
-                edSelection.clear(); edRenderContent();
+            if (e.key === 'Escape') {
+                if (edSelection.size > 0) { edSelection.clear(); edUpdateSelectionUI(); }
+                if (edSearch) {
+                    edSearch = '';
+                    document.getElementById('ed-search-input').value = '';
+                    edRenderContent();
+                }
             }
+            if (e.key === 'ArrowUp' && e.altKey) { e.preventDefault(); edBtnScrollTop(); }
+            if (e.key === 'ArrowDown' && e.altKey) { e.preventDefault(); edBtnScrollBot(); }
         });
+
+        function edBtnScrollTop() { document.getElementById('ed-content-list').scrollTop = 0; }
+        function edBtnScrollBot() { const el = document.getElementById('ed-content-list'); el.scrollTop = el.scrollHeight; }
 
         // Page-level drag & drop for editor tab
         document.addEventListener('dragover', e => e.preventDefault());
