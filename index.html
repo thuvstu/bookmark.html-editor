@@ -3,1760 +3,290 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="color-scheme" content="light dark">
+    <meta name="referrer" content="no-referrer">
     <title>Bookmark Tools Pro</title>
-    <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0
-        }
 
-        html,
-        body {
-            height: 100%;
-            overflow: hidden
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg);
-            color: var(--fg);
-            display: flex;
-            flex-direction: column;
-            font-size: 14px;
-            transition: background .2s, color .2s
-        }
-
-        :root {
-            --bg: #f0f4f8;
-            --fg: #2d3748;
-            --panel: #fff;
-            --border: #e2e8f0;
-            --border-hover: #cbd5e0;
-            --muted: #718096;
-            --muted2: #a0aec0;
-            --accent: #0056b3;
-            --accent-bg: #ebf8ff;
-            --accent-br: #bee3f8;
-            --header: #1e3a5f;
-            --hover: #f7fafc;
-            --sel-bg: #eff6ff;
-            --sel-br: #bfdbfe;
-            --danger: #c53030;
-            --danger-bg: #fed7d7;
-            --warn: #f59e0b;
-            --tag-bg: #e0e7ff;
-            --tag-fg: #3730a3;
-            --code-bg: #1a202c;
-            --code-fg: #a0ffb0;
-            --shadow: rgba(0, 0, 0, .08);
-            --shadow-lg: rgba(0, 0, 0, .18);
-        }
-
-        body.dark {
-            --bg: #0f172a;
-            --fg: #e2e8f0;
-            --panel: #1e293b;
-            --border: #334155;
-            --border-hover: #475569;
-            --muted: #94a3b8;
-            --muted2: #64748b;
-            --accent: #60a5fa;
-            --accent-bg: #1e3a5f;
-            --accent-br: #3b82f6;
-            --header: #0c1a2e;
-            --hover: #293548;
-            --sel-bg: #1e3a5f;
-            --sel-br: #3b82f6;
-            --danger: #f87171;
-            --danger-bg: #450a0a;
-            --tag-bg: #3730a3;
-            --tag-fg: #c7d2fe;
-        }
-
-        header {
-            background: var(--header);
-            color: #fff;
-            padding: 0 20px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px var(--shadow-lg);
-            gap: 14px
-        }
-
-        header h1 {
-            font-size: 16px;
-            font-weight: 700
-        }
-
-        .hdr-btn {
-            margin-left: auto;
-            background: rgba(255, 255, 255, .1);
-            border: none;
-            color: #fff;
-            padding: 5px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            transition: .12s
-        }
-
-        .hdr-btn:hover {
-            background: rgba(255, 255, 255, .2)
-        }
-
-        #tab-bar {
-            background: var(--panel);
-            border-bottom: 2px solid var(--border);
-            display: flex;
-            padding: 0 20px;
-            flex-shrink: 0
-        }
-
-        .tab-btn {
-            padding: 9px 18px;
-            cursor: pointer;
-            border: none;
-            background: none;
-            font-weight: 700;
-            font-size: 13px;
-            color: var(--muted);
-            border-bottom: 3px solid transparent;
-            margin-bottom: -2px;
-            transition: .12s
-        }
-
-        .tab-btn:hover {
-            color: var(--fg);
-            background: var(--hover)
-        }
-
-        .tab-btn.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent)
-        }
-
-        .tab-content {
-            display: none;
-            flex: 1;
-            min-height: 0
-        }
-
-        .tab-content.active {
-            display: flex;
-            flex-direction: column
-        }
-
-        #tab-merger.active {
-            overflow-y: auto
-        }
-
-        /* Merger */
-        #merger-view {
-            max-width: 800px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 24px 20px
-        }
-
-        .desc {
-            color: var(--muted);
-            margin-bottom: 18px;
-            font-size: 14px;
-            line-height: 1.7
-        }
-
-        .card {
-            background: var(--panel);
-            border-radius: 10px;
-            box-shadow: 0 1px 4px var(--shadow);
-            padding: 20px;
-            margin-bottom: 16px;
-            border: 1px solid var(--border)
-        }
-
-        .card h2 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent);
-            margin: 0 0 12px
-        }
-
-        .drop-zone {
-            border: 2px dashed var(--border-hover);
-            padding: 40px 20px;
-            text-align: center;
-            background: var(--hover);
-            cursor: pointer;
-            border-radius: 8px;
-            transition: .2s;
-            color: var(--muted);
-            font-size: 14px;
-            line-height: 1.8
-        }
-
-        .drop-zone:hover,
-        .drop-zone.dragover {
-            border-color: var(--accent);
-            background: var(--accent-bg);
-            color: var(--accent)
-        }
-
-        .dz-icon {
-            font-size: 32px;
-            display: block;
-            margin-bottom: 6px
-        }
-
-        input[type=file] {
-            display: none
-        }
-
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 12px
-        }
-
-        .stat-box {
-            background: var(--hover);
-            border-radius: 8px;
-            padding: 12px;
-            text-align: center;
-            border: 1px solid var(--border)
-        }
-
-        .stat-box .num {
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--accent);
-            display: block
-        }
-
-        .stat-box .lbl {
-            font-size: 11px;
-            color: var(--muted);
-            margin-top: 2px
-        }
-
-        .btn-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap
-        }
-
-        .dl-btn {
-            flex: 1;
-            padding: 12px 14px;
-            font-size: 13px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: none;
-            font-weight: 700;
-            color: #fff;
-            transition: .15s;
-            min-width: 120px
-        }
-
-        .dl-btn:hover:not(:disabled) {
-            opacity: .87;
-            transform: translateY(-1px)
-        }
-
-        .dl-btn:disabled {
-            background: var(--border-hover) !important;
-            cursor: not-allowed;
-            transform: none
-        }
-
-        .btn-blue {
-            background: #0d6efd
-        }
-
-        .btn-green {
-            background: #198754
-        }
-
-        .file-chips {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 10px
-        }
-
-        .file-chip {
-            background: var(--accent-bg);
-            color: var(--accent);
-            border-radius: 12px;
-            padding: 3px 10px;
-            font-size: 11px;
-            font-weight: 600
-        }
-
-        .log-box {
-            background: var(--code-bg);
-            color: var(--code-fg);
-            font-family: monospace;
-            font-size: 11px;
-            padding: 12px;
-            border-radius: 8px;
-            min-height: 50px;
-            white-space: pre-wrap;
-            line-height: 1.6;
-            margin-top: 12px;
-            display: none
-        }
-
-        .log-box.show {
-            display: block
-        }
-
-        /* Editor */
-        #editor-view {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            min-height: 0
-        }
-
-        #ed-main-toolbar {
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            padding: 5px 12px;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex-shrink: 0;
-            flex-wrap: wrap
-        }
-
-        .tb-group {
-            display: flex;
-            gap: 2px;
-            align-items: center
-        }
-
-        .tb-sep {
-            width: 1px;
-            height: 22px;
-            background: var(--border);
-            margin: 0 4px;
-            flex-shrink: 0
-        }
-
-        .tb-spacer {
-            flex: 1
-        }
-
-        .tb-btn {
-            padding: 5px 10px;
-            border: 1px solid transparent;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--fg);
-            background: none;
-            transition: .12s;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 4px
-        }
-
-        .tb-btn:hover:not(:disabled) {
-            background: var(--hover);
-            border-color: var(--border)
-        }
-
-        .tb-btn:disabled {
-            opacity: .35;
-            cursor: not-allowed
-        }
-
-        .tb-btn.tb-primary {
-            background: var(--accent-bg);
-            color: var(--accent);
-            border-color: var(--accent-br)
-        }
-
-        .tb-btn.tb-primary:hover:not(:disabled) {
-            background: var(--accent-br)
-        }
-
-        .tb-btn.tb-danger:hover:not(:disabled) {
-            background: var(--danger-bg);
-            color: var(--danger);
-            border-color: var(--danger)
-        }
-
-        .tb-btn.active {
-            background: var(--accent-bg);
-            color: var(--accent);
-            border-color: var(--accent-br)
-        }
-
-        .tb-sel-group {
-            display: flex;
-            gap: 2px;
-            transition: opacity .15s
-        }
-
-        .tb-sel-group.disabled {
-            opacity: .3;
-            pointer-events: none
-        }
-
-        #ed-content-tabs {
-            display: flex;
-            align-items: flex-end;
-            gap: 2px;
-            background: var(--bg);
-            padding: 3px 8px 0;
-            border-bottom: 1px solid var(--border);
-            overflow-x: auto;
-            flex-shrink: 0;
-            scrollbar-width: thin;
-            min-height: 32px
-        }
-
-        #ed-content-tabs::-webkit-scrollbar {
-            height: 3px
-        }
-
-        .ed-ctab {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 10px 5px;
-            border: 1px solid transparent;
-            border-radius: 5px 5px 0 0;
-            cursor: pointer;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--muted);
-            background: var(--border);
-            white-space: nowrap;
-            max-width: 160px;
-            border-bottom: none;
-            transition: .1s;
-            flex-shrink: 0
-        }
-
-        .ed-ctab:hover {
-            background: var(--panel);
-            color: var(--fg)
-        }
-
-        .ed-ctab.active {
-            background: var(--panel);
-            color: var(--accent);
-            border-color: var(--border);
-            border-bottom-color: var(--panel);
-            margin-bottom: -1px;
-            z-index: 1
-        }
-
-        .ed-ctab.pinned::before {
-            content: '📌';
-            font-size: 9px;
-            margin-right: 2px
-        }
-
-        .ed-ctab-lbl {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px
-        }
-
-        .ed-ctab-x {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            color: var(--muted2);
-            flex-shrink: 0
-        }
-
-        .ed-ctab-x:hover {
-            background: var(--danger-bg);
-            color: var(--danger)
-        }
-
-        .ed-ctab-add {
-            padding: 3px 8px;
-            border: 1px dashed var(--border-hover);
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--muted2);
-            background: none;
-            transition: .12s;
-            align-self: center
-        }
-
-        .ed-ctab-add:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-bg)
-        }
-
-        #ed-filter-bar {
-            background: var(--panel);
-            border-bottom: 1px solid var(--border);
-            padding: 5px 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            overflow-x: auto
-        }
-
-        #ed-breadcrumb {
-            font-size: 12px;
-            color: var(--fg);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex: 1;
-            min-width: 60px
-        }
-
-        .bc-item {
-            cursor: pointer;
-            color: var(--accent)
-        }
-
-        .bc-item:hover {
-            text-decoration: underline
-        }
-
-        .bc-sep {
-            color: var(--border-hover);
-            margin: 0 3px
-        }
-
-        .bc-cur {
-            color: var(--fg);
-            font-weight: 600
-        }
-
-        .filter-sel {
-            padding: 3px 7px;
-            border: 1px solid var(--border);
-            border-radius: 5px;
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--fg);
-            background: var(--panel);
-            cursor: pointer;
-            transition: .12s
-        }
-
-        .filter-sel:hover {
-            border-color: var(--accent);
-            color: var(--accent)
-        }
-
-        .bar-sep {
-            width: 1px;
-            height: 18px;
-            background: var(--border);
-            flex-shrink: 0
-        }
-
-        .bar-btn {
-            padding: 3px 7px;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 11px;
-            color: var(--muted);
-            background: var(--panel);
-            transition: .12s;
-            flex-shrink: 0
-        }
-
-        .bar-btn:hover {
-            background: var(--hover);
-            color: var(--fg)
-        }
-
-        .bar-btn.on {
-            background: var(--accent-bg);
-            color: var(--accent);
-            border-color: var(--accent-br)
-        }
-
-        #ed-search-bar {
-            padding: 5px 12px;
-            border-bottom: 1px solid var(--border);
-            background: var(--panel);
-            display: none;
-            flex-shrink: 0
-        }
-
-        #ed-search-bar.show {
-            display: flex;
-            gap: 6px;
-            align-items: center
-        }
-
-        #ed-search-input {
-            flex: 1;
-            border: 1px solid var(--border-hover);
-            border-radius: 5px;
-            padding: 5px 9px;
-            font-size: 12px;
-            outline: none;
-            background: var(--panel);
-            color: var(--fg)
-        }
-
-        #ed-search-input:focus {
-            border-color: var(--accent)
-        }
-
-        .scope-grp {
-            display: flex;
-            border: 1px solid var(--border-hover);
-            border-radius: 5px;
-            overflow: hidden;
-            flex-shrink: 0
-        }
-
-        .scope-btn {
-            padding: 3px 9px;
-            border: none;
-            background: var(--panel);
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            cursor: pointer;
-            transition: .12s
-        }
-
-        .scope-btn.on {
-            background: var(--accent);
-            color: #fff
-        }
-
-        #ed-layout {
-            flex: 1;
-            display: flex;
-            overflow: hidden;
-            min-height: 0
-        }
-
-        #ed-tree-panel {
-            width: 220px;
-            min-width: 0;
-            background: var(--panel);
-            border-right: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            flex-shrink: 0;
-            transition: width .18s
-        }
-
-        #ed-tree-panel.collapsed {
-            width: 0 !important;
-            overflow: hidden
-        }
-
-        .ed-divider {
-            width: 5px;
-            cursor: col-resize;
-            flex-shrink: 0;
-            background: transparent;
-            position: relative;
-            z-index: 5
-        }
-
-        .ed-divider::after {
-            content: '';
-            position: absolute;
-            inset: 0 1px;
-            background: var(--border);
-            transition: background .15s
-        }
-
-        .ed-divider:hover::after,
-        .ed-divider.dragging::after {
-            background: var(--accent)
-        }
-
-        #ed-tree-panel.collapsed+.ed-divider {
-            display: none
-        }
-
-        #ed-preview-panel.collapsed {
-            display: none
-        }
-
-        #ed-preview-panel.collapsed+.ed-divider {
-            display: none
-        }
-
-        #ed-tree-header {
-            padding: 7px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .06em;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            gap: 4px
-        }
-
-        .tree-hdr-btns {
-            display: flex;
-            gap: 2px
-        }
-
-        .tree-sm-btn {
-            background: none;
-            border: 1px solid var(--border);
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 10px;
-            color: var(--muted2);
-            padding: 1px 5px;
-            transition: .12s
-        }
-
-        .tree-sm-btn:hover {
-            background: var(--hover);
-            color: var(--fg)
-        }
-
-        #ed-tree-scroll {
-            flex: 1;
-            overflow-y: auto;
-            padding: 4px 0
-        }
-
-        .tree-empty {
-            padding: 16px;
-            text-align: center;
-            color: var(--muted2);
-            font-size: 12px;
-            line-height: 1.6
-        }
-
-        .tn {
-            display: flex;
-            align-items: center;
-            gap: 3px;
-            padding: 0;
-            cursor: pointer;
-            border-radius: 5px;
-            margin: 1px 4px;
-            transition: background .08s;
-            user-select: none;
-            min-height: 0
-        }
-
-        .tn:hover {
-            background: var(--hover)
-        }
-
-        .tn.selected {
-            background: var(--accent-bg);
-            color: var(--accent)
-        }
-
-        .tn.selected .tn-lbl {
-            font-weight: 600
-        }
-
-        .tn-ind {
-            flex-shrink: 0
-        }
-
-        .tn-tog {
-            width: 18px;
-            height: 26px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8px;
-            color: var(--muted2);
-            border-radius: 3px
-        }
-
-        .tn-tog:hover {
-            background: var(--border);
-            color: var(--fg)
-        }
-
-        .tn-tog-ph {
-            width: 18px;
-            flex-shrink: 0
-        }
-
-        .tn-body {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            padding: 4px 8px 4px 0;
-            min-width: 0
-        }
-
-        .tn-ico {
-            font-size: 13px;
-            flex-shrink: 0
-        }
-
-        .tn-lbl {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 12px
-        }
-
-        .tn-cnt {
-            font-size: 10px;
-            color: var(--muted2);
-            background: var(--hover);
-            padding: 1px 5px;
-            border-radius: 10px;
-            flex-shrink: 0
-        }
-
-        .tn.selected .tn-cnt {
-            background: var(--accent-br);
-            color: var(--accent)
-        }
-
-        #ed-content-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            min-width: 0
-        }
-
-        #ed-content-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 8px 10px;
-            display: flex;
-            flex-direction: column;
-            gap: 3px
-        }
-
-        .ci {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 7px;
-            display: flex;
-            align-items: stretch;
-            transition: box-shadow .12s, border-color .12s, background .1s;
-            position: relative
-        }
-
-        .ci:hover {
-            box-shadow: 0 2px 8px var(--shadow);
-            border-color: var(--border-hover)
-        }
-
-        .ci.selected {
-            background: var(--sel-bg);
-            border-color: var(--sel-br)
-        }
-
-        .ci.active {
-            outline: 2px solid var(--accent);
-            outline-offset: -2px
-        }
-
-        .ci.dnd-before {
-            border-top: 3px solid var(--accent) !important
-        }
-
-        .ci.dnd-after {
-            border-bottom: 3px solid var(--accent) !important
-        }
-
-        .ci.dnd-into {
-            background: var(--accent-bg) !important;
-            border-color: var(--accent) !important
-        }
-
-        .ci.dup-url::after {
-            content: '重複';
-            position: absolute;
-            top: 2px;
-            right: 6px;
-            font-size: 9px;
-            background: var(--warn);
-            color: #fff;
-            padding: 1px 5px;
-            border-radius: 8px;
-            font-weight: 700
-        }
-
-        .tn.dnd-into {
-            background: var(--accent-bg) !important
-        }
-
-        .ci-chk-col {
-            display: flex;
-            align-items: center;
-            padding: 0 4px 0 10px;
-            flex-shrink: 0
-        }
-
-        .ci-chk {
-            width: 14px;
-            height: 14px;
-            cursor: pointer;
-            accent-color: var(--accent);
-            opacity: 0;
-            transition: opacity .12s
-        }
-
-        .ci:hover .ci-chk,
-        .ci.selected .ci-chk,
-        .has-sel .ci-chk {
-            opacity: 1
-        }
-
-        .ci-nav,
-        .ci-sel {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 0;
-            padding: 7px 6px 7px 0
-        }
-
-        .ci-nav {
-            cursor: pointer
-        }
-
-        .ci-nav:hover .ci-nav-hint {
-            opacity: 1
-        }
-
-        .ci-nav-hint {
-            font-size: 10px;
-            color: var(--muted2);
-            opacity: 0;
-            transition: opacity .12s;
-            white-space: nowrap
-        }
-
-        .ci-ico {
-            font-size: 16px;
-            flex-shrink: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 20px;
-            height: 20px
-        }
-
-        .ci-ico img {
-            width: 16px;
-            height: 16px;
-            border-radius: 2px
-        }
-
-        .ci-info {
-            flex: 1;
-            overflow: hidden;
-            min-width: 0
-        }
-
-        .ci-ttl {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--fg);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            line-height: 1.4
-        }
-
-        .ci-meta-row {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            margin-top: 1px;
-            flex-wrap: wrap
-        }
-
-        .ci-url {
-            font-size: 11px;
-            color: var(--muted2);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            flex: 1;
-            min-width: 0
-        }
-
-        .ci-url a {
-            color: inherit;
-            text-decoration: none
-        }
-
-        .ci-url a:hover {
-            color: var(--accent);
-            text-decoration: underline
-        }
-
-        .ci-sub {
-            font-size: 11px;
-            color: var(--muted2)
-        }
-
-        .tag-bd {
-            display: inline-flex;
-            align-items: center;
-            padding: 1px 6px;
-            border-radius: 9px;
-            background: var(--tag-bg);
-            color: var(--tag-fg);
-            font-size: 10px;
-            font-weight: 600;
-            white-space: nowrap;
-            max-width: 80px;
-            overflow: hidden;
-            text-overflow: ellipsis
-        }
-
-        .star-bd {
-            font-size: 11px;
-            letter-spacing: -1px;
-            color: var(--warn);
-            white-space: nowrap
-        }
-
-        .ci-path {
-            font-size: 10px;
-            color: var(--muted2);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            margin-top: 1px
-        }
-
-        .ci-acts {
-            display: flex;
-            align-items: center;
-            gap: 1px;
-            padding: 0 6px 0 2px;
-            flex-shrink: 0;
-            opacity: 0;
-            transition: opacity .12s
-        }
-
-        .ci:hover .ci-acts,
-        .ci.selected .ci-acts {
-            opacity: 1
-        }
-
-        .ia-btn {
-            width: 26px;
-            height: 26px;
-            border: none;
-            background: transparent;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: background .1s;
-            color: var(--muted)
-        }
-
-        .ia-btn:hover {
-            background: var(--hover);
-            color: var(--fg)
-        }
-
-        .ia-btn:disabled {
-            opacity: .3;
-            cursor: default
-        }
-
-        .ia-del:hover {
-            background: var(--danger-bg);
-            color: var(--danger)
-        }
-
-        .ed-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex: 1;
-            color: var(--muted2);
-            font-size: 14px;
-            text-align: center;
-            gap: 10px;
-            line-height: 1.6;
-            min-height: 120px;
-            padding: 20px
-        }
-
-        .ed-empty .big-ico {
-            font-size: 40px
-        }
-
-        /* Preview */
-        #ed-preview-panel {
-            width: 400px;
-            min-width: 0;
-            background: var(--panel);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            flex-shrink: 0
-        }
-
-        #ed-preview-header {
-            padding: 6px 10px;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-shrink: 0;
-            background: var(--panel)
-        }
-
-        #ed-preview-title {
-            flex: 1;
-            font-weight: 600;
-            color: var(--fg);
-            text-transform: none;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 12px
-        }
-
-        #ed-preview-frame-wrap {
-            flex: 1;
-            position: relative;
-            background: var(--hover);
-            overflow: hidden
-        }
-
-        #ed-preview-iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            background: #fff
-        }
-
-        #ed-preview-fallback {
-            position: absolute;
-            inset: 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            text-align: center;
-            color: var(--muted);
-            gap: 12px
-        }
-
-        #ed-preview-fallback.show {
-            display: flex
-        }
-
-        #ed-preview-fallback .fb-ico {
-            font-size: 48px
-        }
-
-        #ed-preview-fallback .fb-url {
-            font-size: 11px;
-            color: var(--muted2);
-            word-break: break-all;
-            max-width: 100%
-        }
-
-        #ed-preview-fallback a {
-            color: var(--accent);
-            text-decoration: none;
-            padding: 6px 14px;
-            border: 1px solid var(--accent);
-            border-radius: 5px;
-            font-size: 12px;
-            font-weight: 600
-        }
-
-        #ed-preview-fallback a:hover {
-            background: var(--accent);
-            color: #fff
-        }
-
-        #ed-preview-loading {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            font-size: 10px;
-            color: var(--muted);
-            background: var(--panel);
-            padding: 2px 8px;
-            border-radius: 10px;
-            display: none
-        }
-
-        #ed-preview-loading.show {
-            display: block
-        }
-
-        #ed-statusbar {
-            background: var(--panel);
-            border-top: 1px solid var(--border);
-            padding: 3px 12px;
-            font-size: 11px;
-            color: var(--muted);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-shrink: 0;
-            height: 24px
-        }
-
-        #ed-sb-msg {
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap
-        }
-
-        #ed-sb-counts {
-            color: var(--muted2)
-        }
-
-        .sb-badge {
-            padding: 1px 6px;
-            border-radius: 9px;
-            background: var(--hover);
-            font-size: 10px;
-            font-weight: 600
-        }
-
-        .sb-badge.dirty {
-            background: var(--warn);
-            color: #fff
-        }
-
-        /* Context Menu */
-        .ctx-menu {
-            position: fixed;
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            box-shadow: 0 8px 24px var(--shadow-lg);
-            z-index: 1000;
-            min-width: 200px;
-            padding: 4px;
-            animation: ctx-in .08s ease
-        }
-
-        @keyframes ctx-in {
-            from {
-                opacity: 0;
-                transform: scale(.96)
-            }
-
-            to {
-                opacity: 1;
-                transform: none
-            }
-        }
-
-        .ctx-item {
-            padding: 7px 12px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 13px;
-            color: var(--fg);
-            transition: background .08s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap
-        }
-
-        .ctx-item:hover {
-            background: var(--hover)
-        }
-
-        .ctx-danger:hover {
-            background: var(--danger-bg);
-            color: var(--danger)
-        }
-
-        .ctx-sep {
-            height: 1px;
-            background: var(--border);
-            margin: 3px 0
-        }
-
-        .ctx-shortcut {
-            margin-left: auto;
-            font-size: 10px;
-            color: var(--muted2);
-            padding-left: 12px
-        }
-
-        /* Modal */
-        .modal-ov {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, .45);
-            z-index: 200;
-            align-items: center;
-            justify-content: center
-        }
-
-        .modal-ov.show {
-            display: flex
-        }
-
-        .modal-box {
-            background: var(--panel);
-            border-radius: 12px;
-            box-shadow: 0 20px 60px var(--shadow-lg);
-            animation: modal-in .12s ease;
-            border: 1px solid var(--border)
-        }
-
-        @keyframes modal-in {
-            from {
-                transform: translateY(-10px) scale(.97);
-                opacity: 0
-            }
-
-            to {
-                transform: none;
-                opacity: 1
-            }
-        }
-
-        #ed-edit-box {
-            padding: 22px;
-            width: 460px;
-            max-width: 95vw
-        }
-
-        #ed-edit-box h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 14px
-        }
-
-        .mf {
-            margin-bottom: 10px
-        }
-
-        .mf label {
-            display: block;
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            margin-bottom: 3px
-        }
-
-        .mf input,
-        .mf textarea {
-            width: 100%;
-            border: 1px solid var(--border-hover);
-            border-radius: 5px;
-            padding: 7px 10px;
-            font-size: 13px;
-            outline: none;
-            transition: border-color .15s;
-            font-family: inherit;
-            background: var(--panel);
-            color: var(--fg)
-        }
-
-        .mf input:focus,
-        .mf textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(0, 86, 179, .1)
-        }
-
-        .star-picker {
-            display: flex;
-            gap: 4px;
-            margin: 4px 0
-        }
-
-        .star-pick {
-            font-size: 22px;
-            cursor: pointer;
-            color: var(--border-hover);
-            background: none;
-            border: none;
-            padding: 0;
-            line-height: 1;
-            transition: color .1s, transform .1s
-        }
-
-        .star-pick.on {
-            color: var(--warn)
-        }
-
-        .star-pick:hover {
-            transform: scale(1.2)
-        }
-
-        .m-acts {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 16px
-        }
-
-        .m-acts button {
-            padding: 7px 16px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
-            transition: .12s
-        }
-
-        .m-save {
-            background: var(--accent);
-            color: #fff
-        }
-
-        .m-save:hover {
-            opacity: .85
-        }
-
-        .m-cancel {
-            background: var(--hover);
-            color: var(--fg)
-        }
-
-        .m-cancel:hover {
-            background: var(--border)
-        }
-
-        #ed-move-box {
-            padding: 18px;
-            width: 340px;
-            max-width: 95vw
-        }
-
-        #ed-move-box h3 {
-            font-size: 13px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 8px
-        }
-
-        #ed-move-list {
-            max-height: 260px;
-            overflow-y: auto;
-            border: 1px solid var(--border);
-            border-radius: 6px
-        }
-
-        .move-item {
-            padding: 8px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            border-bottom: 1px solid var(--border);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            color: var(--fg)
-        }
-
-        .move-item:last-child {
-            border-bottom: none
-        }
-
-        .move-item:hover {
-            background: var(--accent-bg);
-            color: var(--accent)
-        }
-
-        #ed-move-cancel {
-            width: 100%;
-            margin-top: 8px;
-            padding: 7px;
-            border: 1px solid var(--border-hover);
-            background: var(--panel);
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--fg)
-        }
-
-        #ed-move-cancel:hover {
-            background: var(--hover)
-        }
-
-        #ed-keys-box {
-            padding: 22px;
-            width: 520px;
-            max-width: 95vw;
-            max-height: 80vh;
-            overflow-y: auto
-        }
-
-        #ed-keys-box h3 {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--accent);
-            margin-bottom: 14px
-        }
-
-        .keys-section {
-            margin-bottom: 12px
-        }
-
-        .keys-section h4 {
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: .05em;
-            margin-bottom: 6px;
-            padding-bottom: 4px;
-            border-bottom: 1px solid var(--border)
-        }
-
-        .key-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 4px 0;
-            font-size: 12px
-        }
-
-        .key-row .keys {
-            display: flex;
-            gap: 3px
-        }
-
-        kbd {
-            background: var(--hover);
-            border: 1px solid var(--border-hover);
-            border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 11px;
-            font-family: monospace;
-            color: var(--fg);
-            box-shadow: 0 1px 0 var(--border-hover)
-        }
-
-        .key-desc {
-            color: var(--fg)
-        }
-
-        /* Toast */
-        #toast {
-            position: fixed;
-            bottom: 32px;
-            left: 50%;
-            transform: translateX(-50%) translateY(20px);
-            background: var(--header);
-            color: #fff;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 13px;
-            font-weight: 600;
-            box-shadow: 0 8px 24px var(--shadow-lg);
-            opacity: 0;
-            transition: opacity .2s, transform .2s;
-            z-index: 2000;
-            pointer-events: none
-        }
-
-        #toast.show {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0)
-        }
-
-        #toast.err {
-            background: var(--danger)
-        }
-
-        #toast.ok {
-            background: #198754
-        }
-
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px
-        }
-
-        ::-webkit-scrollbar-track {
-            background: transparent
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border-hover);
-            border-radius: 3px
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--muted)
-        }
-    </style>
+    <link rel="stylesheet" href="./style.css">
 </head>
 
 <body>
-    <header>
+    <!-- =========================================================
+         HEADER
+    ========================================================== -->
+    <header id="app-header">
         <h1>🔖 Bookmark Tools Pro</h1>
-        <button class="hdr-btn" id="theme-toggle" title="テーマ切替">🌙 Dark</button>
+
+        <button type="button" class="hdr-btn" id="theme-toggle" title="テーマ切替" aria-label="テーマを切り替える">
+            🌙 Dark
+        </button>
     </header>
-    <div id="tab-bar">
-        <button class="tab-btn active" data-tab="merger">📚 マージ・最適化</button>
-        <button class="tab-btn" data-tab="editor">✏️ エディタ</button>
-    </div>
 
-    <!-- MERGER -->
-    <div id="tab-merger" class="tab-content active">
+    <!-- =========================================================
+         MAIN TAB BAR
+    ========================================================== -->
+    <nav id="tab-bar" aria-label="メイン機能">
+        <button type="button" class="tab-btn active" data-tab="merger" aria-controls="tab-merger">
+            📚 マージ・最適化
+        </button>
+
+        <button type="button" class="tab-btn" data-tab="editor" aria-controls="tab-editor">
+            ✏️ エディタ
+        </button>
+    </nav>
+
+    <!-- =========================================================
+         MERGER
+    ========================================================== -->
+    <main id="tab-merger" class="tab-content active">
         <div id="merger-view">
-            <p class="desc">複数のブックマークHTMLを統合・最適化します。<br>重複URL削除、ドメイン別フォルダ整理、ファイル間の差分抽出が可能です。</p>
-            <div class="card">
-                <h2>📂 ファイルを選択</h2>
-                <div class="drop-zone" id="m-drop"><span
-                        class="dz-icon">📁</span>ここにHTMLをドラッグ&amp;ドロップ、またはクリックして選択<br><small>（2ファイル以上で差分抽出も可能）</small>
+            <p class="desc">
+                複数のブックマークHTMLを統合・最適化します。<br>
+                重複URL削除、ドメイン別フォルダ整理、ファイル間の差分抽出が可能です。
+            </p>
+
+            <section class="card" aria-labelledby="merger-file-title">
+                <h2 id="merger-file-title">📂 ファイルを選択</h2>
+
+                <div class="drop-zone" id="m-drop" role="button" tabindex="0" aria-label="ブックマークHTMLファイルを選択">
+                    <span class="dz-icon" aria-hidden="true">📁</span>
+
+                    <span>
+                        ここにHTMLをドラッグ&amp;ドロップ、またはクリックして選択
+                    </span>
+
+                    <br>
+
+                    <small>
+                        2ファイル以上で差分抽出も可能
+                    </small>
                 </div>
-                <input type="file" id="m-file-input" multiple accept=".html,.htm">
-                <div class="file-chips" id="m-chips"></div>
-            </div>
-            <div class="card" id="m-result" style="display:none;">
-                <h2>📊 解析結果</h2>
+
+                <input type="file" id="m-file-input" multiple accept=".html,.htm,text/html">
+
+                <div class="file-chips" id="m-chips" aria-live="polite"></div>
+            </section>
+
+            <section class="card" id="m-result" style="display:none" aria-labelledby="merger-result-title">
+                <h2 id="merger-result-title">📊 解析結果</h2>
+
                 <div class="stats-grid">
-                    <div class="stat-box"><span class="num" id="m-s-total">0</span><span class="lbl">総リンク数（重複込み）</span>
+                    <div class="stat-box">
+                        <span class="num" id="m-s-total">0</span>
+                        <span class="lbl">総リンク数（重複込み）</span>
                     </div>
-                    <div class="stat-box"><span class="num" id="m-s-merged">0</span><span class="lbl">統合後（ユニーク）</span>
+
+                    <div class="stat-box">
+                        <span class="num" id="m-s-merged">0</span>
+                        <span class="lbl">統合後（ユニーク）</span>
                     </div>
-                    <div class="stat-box"><span class="num" id="m-s-diff">0</span><span class="lbl">差分のみ（非重複）</span>
+
+                    <div class="stat-box">
+                        <span class="num" id="m-s-diff">0</span>
+                        <span class="lbl">差分のみ（非重複）</span>
                     </div>
                 </div>
+
                 <div class="btn-group">
-                    <button id="m-dl-merge" class="dl-btn btn-blue" disabled>🔗 すべて統合してDL</button>
-                    <button id="m-dl-diff" class="dl-btn btn-green" disabled>✂️ 差分のみDL</button>
-                    <button id="m-to-editor" class="dl-btn" style="background:#7c3aed" disabled>✏️ エディタで開く</button>
+                    <button type="button" id="m-dl-merge" class="dl-btn btn-blue" disabled>
+                        🔗 すべて統合してDL
+                    </button>
+
+                    <button type="button" id="m-dl-diff" class="dl-btn btn-green" disabled>
+                        ✂️ 差分のみDL
+                    </button>
+
+                    <button type="button" id="m-to-editor" class="dl-btn btn-purple" disabled>
+                        ✏️ エディタで開く
+                    </button>
                 </div>
-                <div class="log-box show" id="m-log"></div>
-            </div>
+
+                <div class="log-box show" id="m-log" role="log" aria-live="polite"></div>
+            </section>
         </div>
-    </div>
+    </main>
 
-    <!-- EDITOR -->
-    <div id="tab-editor" class="tab-content">
+    <!-- =========================================================
+         EDITOR
+    ========================================================== -->
+    <main id="tab-editor" class="tab-content">
         <div id="editor-view">
-            <div id="ed-main-toolbar">
+            <!-- =================================================
+                 MAIN TOOLBAR
+            ================================================== -->
+            <div id="ed-main-toolbar" role="toolbar" aria-label="エディタ操作">
                 <div class="tb-group">
-                    <button class="tb-btn" id="tb-import">📂 開く</button>
-                    <button class="tb-btn" id="tb-export" disabled>💾 HTML</button>
-                    <button class="tb-btn" id="tb-export-json" disabled>📋 JSON</button>
-                    <input type="file" id="ed-file-input" accept=".html,.htm,.json">
+                    <button type="button" class="tb-btn" id="tb-import">
+                        📂 開く
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-export" disabled>
+                        💾 HTML
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-export-json" disabled>
+                        📋 JSON
+                    </button>
+
+                    <input type="file" id="ed-file-input" accept=".html,.htm,.json,text/html,application/json">
                 </div>
-                <div class="tb-sep"></div>
+
+                <div class="tb-sep" aria-hidden="true"></div>
+
                 <div class="tb-group">
-                    <button class="tb-btn" id="tb-undo" disabled title="元に戻す (Ctrl+Z)">↶</button>
-                    <button class="tb-btn" id="tb-redo" disabled title="やり直し (Ctrl+Shift+Z)">↷</button>
+                    <button type="button" class="tb-btn" id="tb-undo" title="元に戻す (Ctrl+Z)" aria-label="元に戻す" disabled>
+                        ↶
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-redo" title="やり直し (Ctrl+Shift+Z)" aria-label="やり直し"
+                        disabled>
+                        ↷
+                    </button>
                 </div>
-                <div class="tb-sep"></div>
+
+                <div class="tb-sep" aria-hidden="true"></div>
+
                 <div class="tb-group tb-sel-group disabled" id="tb-sel-group">
-                    <button class="tb-btn" id="tb-edit" title="編集 (F2)">✏️</button>
-                    <button class="tb-btn" id="tb-copy-url" title="URLコピー (Ctrl+C)">📋</button>
-                    <button class="tb-btn" id="tb-move-to">📁 移動</button>
-                    <button class="tb-btn" id="tb-tag-btn">🏷️</button>
-                    <button class="tb-btn" id="tb-rate-btn">⭐</button>
-                    <button class="tb-btn tb-danger" id="tb-delete" title="削除 (Delete)">🗑️</button>
+                    <button type="button" class="tb-btn" id="tb-edit" title="編集 (F2)">
+                        ✏️
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-copy-url" title="URLコピー (Ctrl+C)">
+                        📋
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-move-to">
+                        📁 移動
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-tag-btn" title="タグ編集">
+                        🏷️
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-rate-btn" title="レーティング">
+                        ⭐
+                    </button>
+
+                    <button type="button" class="tb-btn tb-danger" id="tb-delete" title="削除 (Delete)">
+                        🗑️
+                    </button>
                 </div>
-                <div class="tb-sep"></div>
+
+                <div class="tb-sep" aria-hidden="true"></div>
+
                 <div class="tb-group">
-                    <button class="tb-btn tb-primary" id="tb-add-link" disabled title="Ctrl+L">＋ リンク</button>
-                    <button class="tb-btn tb-primary" id="tb-add-folder" disabled title="Ctrl+Shift+N">📁＋</button>
-                    <button class="tb-btn" id="tb-add-root">🌳＋</button>
+                    <button type="button" class="tb-btn tb-primary" id="tb-add-link" title="リンク追加 (Ctrl+L)" disabled>
+                        ＋ リンク
+                    </button>
+
+                    <button type="button" class="tb-btn tb-primary" id="tb-add-folder" title="フォルダ追加 (Ctrl+Shift+N)"
+                        disabled>
+                        📁＋
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-add-root" title="ルートフォルダ追加">
+                        🌳＋
+                    </button>
                 </div>
-                <div class="tb-sep"></div>
+
+                <div class="tb-sep" aria-hidden="true"></div>
+
                 <div class="tb-group">
-                    <button class="tb-btn" id="tb-dedup" disabled title="重複URLを削除">🔀 重複整理</button>
-                    <button class="tb-btn" id="tb-find-dup" disabled title="重複ハイライト">👁️ 重複表示</button>
+                    <button type="button" class="tb-btn" id="tb-dedup" title="重複URLを整理" disabled>
+                        🔀 重複整理
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-find-dup" title="重複URLをハイライト" disabled>
+                        👁️ 重複表示
+                    </button>
                 </div>
+
                 <div class="tb-spacer"></div>
+
                 <div class="tb-group">
-                    <span id="ed-stats" style="font-size:11px;color:var(--muted2);margin-right:4px;"></span>
-                    <button class="tb-btn" id="tb-keys" title="ショートカット (?)">⌨️</button>
-                    <button class="tb-btn" id="tb-collapse" title="ツリー">◀</button>
-                    <button class="tb-btn active" id="tb-preview" title="プレビュー">🖼️</button>
+                    <span id="ed-stats" aria-live="polite"></span>
+
+                    <button type="button" class="tb-btn" id="tb-keys" title="ショートカット (?)">
+                        ⌨️
+                    </button>
+
+                    <button type="button" class="tb-btn" id="tb-collapse" title="フォルダツリー表示切替">
+                        ◀
+                    </button>
+
+                    <button type="button" class="tb-btn active" id="tb-preview" title="プレビュー表示切替 (Ctrl+P)">
+                        🖼️
+                    </button>
                 </div>
             </div>
 
-            <div id="ed-content-tabs"></div>
+            <!-- =================================================
+                 EDITOR CONTENT TABS
+            ================================================== -->
+            <div id="ed-content-tabs" role="tablist" aria-label="フォルダタブ"></div>
 
+            <!-- =================================================
+                 EDITOR LAYOUT
+            ================================================== -->
             <div id="ed-layout">
-                <div id="ed-tree-panel">
+                <!-- =============================================
+                     TREE PANEL
+                ============================================== -->
+                <aside id="ed-tree-panel" aria-label="フォルダツリー">
                     <div id="ed-tree-header">
                         <span>📁 フォルダ</span>
+
                         <div class="tree-hdr-btns">
-                            <button class="tree-sm-btn" id="tree-expand-all" title="全展開">⊞</button>
-                            <button class="tree-sm-btn" id="tree-collapse-all" title="全折畳">⊟</button>
-                            <button class="tree-sm-btn" id="tree-add-root">＋</button>
+                            <button type="button" class="tree-sm-btn" id="tree-expand-all" title="全展開"
+                                aria-label="すべて展開">
+                                ⊞
+                            </button>
+
+                            <button type="button" class="tree-sm-btn" id="tree-collapse-all" title="全折畳"
+                                aria-label="すべて折りたたむ">
+                                ⊟
+                            </button>
+
+                            <button type="button" class="tree-sm-btn" id="tree-add-root" title="ルートフォルダ追加"
+                                aria-label="ルートフォルダ追加">
+                                ＋
+                            </button>
                         </div>
                     </div>
-                    <div id="ed-tree-scroll">
-                        <div class="tree-empty">ファイルをインポートして<br>開始してください</div>
-                    </div>
-                </div>
-                <div class="ed-divider" id="ed-divider1"></div>
 
-                <div id="ed-content-panel">
+                    <div id="ed-tree-scroll">
+                        <div class="tree-empty">
+                            ファイルをインポートして<br>
+                            開始してください
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="ed-divider" id="ed-divider1" role="separator" aria-orientation="vertical"
+                    aria-label="ツリーパネル幅変更"></div>
+
+                <!-- =============================================
+                     CONTENT PANEL
+                ============================================== -->
+                <section id="ed-content-panel">
+                    <!-- Filter bar -->
                     <div id="ed-filter-bar">
-                        <div id="ed-breadcrumb"><span class="bc-item" onclick="edNavRoot()">🏠 Root</span></div>
-                        <div class="bar-sep"></div>
-                        <select class="filter-sel" id="flt-type" title="種類">
+                        <div id="ed-breadcrumb" aria-label="現在のフォルダ">
+                            <span class="bc-item" data-action="nav-root">
+                                🏠 Root
+                            </span>
+                        </div>
+
+                        <div class="bar-sep" aria-hidden="true"></div>
+
+                        <select class="filter-sel" id="flt-type" title="種類" aria-label="種類で絞り込み">
                             <option value="all">すべて</option>
                             <option value="link">🔗 リンク</option>
                             <option value="folder">📁 フォルダ</option>
                         </select>
-                        <select class="filter-sel" id="flt-rating" title="評価">
+
+                        <select class="filter-sel" id="flt-rating" title="評価" aria-label="レーティングで絞り込み">
                             <option value="0">⭐ すべて</option>
                             <option value="1">⭐ 以上</option>
                             <option value="2">⭐⭐ 以上</option>
@@ -1764,8 +294,18 @@
                             <option value="4">⭐⭐⭐⭐ 以上</option>
                             <option value="5">⭐⭐⭐⭐⭐</option>
                         </select>
-                        <input type="text" id="flt-tag" class="filter-sel" placeholder="🏷️ タグ" style="width:80px;">
-                        <select class="filter-sel" id="flt-sort" title="並び替え">
+
+                        <input type="search" id="flt-tag" class="filter-sel filter-input" placeholder="🏷️ タグ"
+                            aria-label="タグで絞り込み">
+
+                        <input type="search" id="flt-domain" class="filter-sel filter-input filter-domain"
+                            placeholder="🌐 ドメイン" aria-label="ドメインで絞り込み">
+
+                        <button type="button" class="bar-btn" id="flt-tagunset" title="タグ未設定のみ" aria-pressed="false">
+                            🏷️未設定
+                        </button>
+
+                        <select class="filter-sel" id="flt-sort" title="並び替え" aria-label="並び替え">
                             <option value="default">デフォルト順</option>
                             <option value="name">名前 A→Z</option>
                             <option value="name-d">名前 Z→A</option>
@@ -1775,1094 +315,450 @@
                             <option value="date-d">日付 旧→新</option>
                             <option value="url">URL A→Z</option>
                         </select>
-                        <div class="bar-sep"></div>
-                        <button class="bar-btn" id="list-top" title="先頭">⬆</button>
-                        <button class="bar-btn" id="list-bot" title="末尾">⬇</button>
-                        <button class="bar-btn" id="btn-search" title="検索 (Ctrl+F)">🔍</button>
+
+                        <div class="bar-sep" aria-hidden="true"></div>
+
+                        <select class="filter-sel preset-select" id="flt-preset" title="保存済み検索" aria-label="保存済み検索">
+                            <option value="">📁 保存済み</option>
+                        </select>
+
+                        <button type="button" class="bar-btn" id="flt-preset-save" title="現在の検索条件を保存"
+                            aria-label="検索条件を保存">
+                            💾
+                        </button>
+
+                        <div class="bar-sep" aria-hidden="true"></div>
+
+                        <button type="button" class="bar-btn" id="list-top" title="先頭へ移動" aria-label="先頭へ移動">
+                            ⬆
+                        </button>
+
+                        <button type="button" class="bar-btn" id="list-bot" title="末尾へ移動" aria-label="末尾へ移動">
+                            ⬇
+                        </button>
+
+                        <button type="button" class="bar-btn" id="btn-search" title="検索 (Ctrl+F)" aria-label="検索を開く">
+                            🔍
+                        </button>
                     </div>
 
+                    <!-- Search bar -->
                     <div id="ed-search-bar">
-                        <input type="text" id="ed-search-input" placeholder="タイトル・URL・タグで検索... (正規表現: /pattern/)">
-                        <div class="scope-grp">
-                            <button class="scope-btn on" onclick="edSetScope(true)">全体</button>
-                            <button class="scope-btn" onclick="edSetScope(false)">現在</button>
+                        <div class="search-row search-primary-row">
+                            <input type="search" id="ed-search-input" autocomplete="off" spellcheck="false"
+                                placeholder='検索... 例: domain:github.com tag:tutorial rating:>=4 -jquery'
+                                aria-label="ブックマークを検索">
+
+                            <span id="ed-search-count" aria-live="polite"></span>
+
+                            <button type="button" class="bar-btn" id="sch-prev" title="前の一致 (Shift+Enter)"
+                                aria-label="前の検索結果">
+                                ▲
+                            </button>
+
+                            <button type="button" class="bar-btn" id="sch-next" title="次の一致 (Enter)"
+                                aria-label="次の検索結果">
+                                ▼
+                            </button>
+
+                            <div class="scope-grp" aria-label="検索範囲">
+                                <button type="button" class="scope-btn on" data-scope="deep">
+                                    全体
+                                </button>
+
+                                <button type="button" class="scope-btn" data-scope="current">
+                                    現在
+                                </button>
+                            </div>
+
+                            <button type="button" class="bar-btn" id="ed-search-clear" title="検索クリア"
+                                aria-label="検索をクリア">
+                                ✕
+                            </button>
+                        </div>
+
+                        <div class="search-row search-options-row">
+                            <div class="scope-grp" aria-label="検索条件">
+                                <button type="button" class="scope-btn on" id="sch-mode-and">
+                                    AND
+                                </button>
+
+                                <button type="button" class="scope-btn" id="sch-mode-or">
+                                    OR
+                                </button>
+                            </div>
+
+                            <label class="chk-item">
+                                <input type="checkbox" id="sch-title" checked>
+                                タイトル
+                            </label>
+
+                            <label class="chk-item">
+                                <input type="checkbox" id="sch-url" checked>
+                                URL
+                            </label>
+
+                            <label class="chk-item">
+                                <input type="checkbox" id="sch-tags" checked>
+                                タグ
+                            </label>
+
+                            <label class="chk-item" title="大文字・小文字を区別">
+                                <input type="checkbox" id="sch-case">
+                                Aa
+                            </label>
+
+                            <label class="chk-item">
+                                <input type="checkbox" id="sch-word">
+                                完全一致
+                            </label>
+
+                            <label class="chk-item">
+                                <input type="checkbox" id="sch-regex">
+                                .* 正規表現
+                            </label>
+                        </div>
+
+                        <div class="search-help">
+                            <span>例:</span>
+                            <code>domain:github.com</code>
+                            <code>tag:tutorial</code>
+                            <code>rating:&gt;=4</code>
+                            <code>type:link</code>
+                            <code>after:2024-01-01</code>
+                            <code>path:"開発/資料"</code>
+                            <code>is:duplicate</code>
+                            <code>is:untagged</code>
+                            <code>is:invalid</code>
+                            <code>-archive</code>
+                            <code>~javascrpt</code>
                         </div>
                     </div>
 
-                    <div id="ed-content-list">
-                        <div class="ed-empty"><span class="big-ico">📚</span><span>ファイルを開いて開始<br><small
-                                    style="color:var(--border-hover);">Netscape Bookmark HTML / JSON 対応</small></span>
+                    <!-- Content list -->
+                    <div id="ed-content-list" role="list" aria-label="ブックマーク一覧">
+                        <div class="ed-empty">
+                            <span class="big-ico" aria-hidden="true">📚</span>
+
+                            <span>
+                                ファイルを開いて開始<br>
+
+                                <small>
+                                    Netscape Bookmark HTML / JSON 対応
+                                </small>
+                            </span>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                <div class="ed-divider" id="ed-divider2"></div>
+                <div class="ed-divider" id="ed-divider2" role="separator" aria-orientation="vertical"
+                    aria-label="プレビューパネル幅変更"></div>
 
-                <div id="ed-preview-panel">
+                <!-- =============================================
+                     PREVIEW PANEL
+                ============================================== -->
+                <aside id="ed-preview-panel" aria-label="Webプレビュー">
                     <div id="ed-preview-header">
-                        <span>🖼️</span>
+                        <span aria-hidden="true">🖼️</span>
                         <span id="ed-preview-title">プレビュー</span>
-                        <button class="tree-sm-btn" id="preview-open" title="新しいタブで開く" style="display:none">↗</button>
-                        <button class="tree-sm-btn" id="preview-reload" title="再読込" style="display:none">↻</button>
+
+                        <button type="button" class="tree-sm-btn" id="preview-open" title="新しいタブで開く"
+                            aria-label="新しいタブで開く" style="display:none">
+                            ↗
+                        </button>
+
+                        <button type="button" class="tree-sm-btn" id="preview-reload" title="再読込" aria-label="プレビュー再読込"
+                            style="display:none">
+                            ↻
+                        </button>
                     </div>
+
                     <div id="ed-preview-frame-wrap">
-                        <iframe id="ed-preview-iframe"
-                            sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                        <iframe id="ed-preview-iframe" title="選択したブックマークのプレビュー" sandbox="allow-forms allow-popups"
                             referrerpolicy="no-referrer"></iframe>
-                        <div id="ed-preview-loading">読込中...</div>
+
+                        <div id="ed-preview-loading">
+                            読込中...
+                        </div>
+
                         <div id="ed-preview-fallback">
-                            <div class="fb-ico">🚫</div>
-                            <div style="font-weight:600;">プレビューできません</div>
-                            <div style="font-size:11px;">このサイトはiframeでの表示を許可していません<br>(X-Frame-Options / CSP)</div>
+                            <div class="fb-ico" aria-hidden="true">🚫</div>
+
+                            <div class="fb-title">
+                                プレビューできません
+                            </div>
+
+                            <div class="fb-message">
+                                このサイトはiframeでの表示を許可していない可能性があります。
+                            </div>
+
                             <div class="fb-url" id="fb-url"></div>
-                            <a id="fb-link" href="#" target="_blank" rel="noopener">↗ 新しいタブで開く</a>
+
+                            <a id="fb-link" href="#" target="_blank" rel="noopener noreferrer">
+                                ↗ 新しいタブで開く
+                            </a>
                         </div>
                     </div>
-                </div>
+                </aside>
             </div>
 
+            <!-- =================================================
+                 STATUS BAR
+            ================================================== -->
             <div id="ed-statusbar">
-                <span id="ed-sb-msg">準備完了</span>
-                <span class="sb-badge" id="sb-autosave" style="display:none">自動保存</span>
-                <span class="sb-badge dirty" id="sb-dirty" style="display:none">未保存</span>
+                <span id="ed-sb-msg" aria-live="polite">
+                    準備完了
+                </span>
+
+                <span class="sb-badge" id="sb-autosave" style="display:none">
+                    自動保存
+                </span>
+
+                <span class="sb-badge dirty" id="sb-dirty" style="display:none">
+                    未保存
+                </span>
+
                 <span id="ed-sb-counts"></span>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- Modals -->
-    <div class="modal-ov" id="ed-modal">
+    <!-- =========================================================
+         EDIT MODAL
+    ========================================================== -->
+    <div class="modal-ov" id="ed-modal" role="dialog" aria-modal="true" aria-labelledby="ed-modal-title">
         <div class="modal-box" id="ed-edit-box">
             <h3 id="ed-modal-title">編集</h3>
-            <div class="mf"><label>タイトル</label><input type="text" id="ed-m-name"></div>
-            <div class="mf" id="ed-m-url-f"><label>URL</label><input type="url" id="ed-m-url" placeholder="https://...">
-            </div>
+
             <div class="mf">
-                <label>タグ <small style="font-weight:400;text-transform:none;">(スペース区切り)</small></label>
-                <input type="text" id="ed-m-tags" placeholder="例: javascript tutorial">
-                <div id="ed-m-tag-sug" style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;"></div>
+                <label for="ed-m-name">タイトル</label>
+                <input type="text" id="ed-m-name" maxlength="4000" autocomplete="off">
             </div>
+
+            <div class="mf" id="ed-m-url-f">
+                <label for="ed-m-url">URL</label>
+                <input type="url" id="ed-m-url" maxlength="20000" placeholder="https://..." autocomplete="off">
+            </div>
+
+            <div class="mf">
+                <label for="ed-m-tags">
+                    タグ
+                    <small>スペースまたはカンマ区切り</small>
+                </label>
+
+                <input type="text" id="ed-m-tags" placeholder="例: javascript tutorial" autocomplete="off">
+
+                <div id="ed-m-tag-sug"></div>
+            </div>
+
             <div class="mf">
                 <label>レーティング</label>
-                <div class="star-picker" id="ed-m-stars">
-                    <button class="star-pick" data-v="1">★</button><button class="star-pick" data-v="2">★</button>
-                    <button class="star-pick" data-v="3">★</button><button class="star-pick" data-v="4">★</button>
-                    <button class="star-pick" data-v="5">★</button>
+
+                <div class="star-picker" id="ed-m-stars" aria-label="レーティング">
+                    <button type="button" class="star-pick" data-v="1" aria-label="1">★</button>
+                    <button type="button" class="star-pick" data-v="2" aria-label="2">★</button>
+                    <button type="button" class="star-pick" data-v="3" aria-label="3">★</button>
+                    <button type="button" class="star-pick" data-v="4" aria-label="4">★</button>
+                    <button type="button" class="star-pick" data-v="5" aria-label="5">★</button>
                 </div>
             </div>
+
             <div class="m-acts">
-                <button class="m-cancel" id="ed-m-cancel">キャンセル</button>
-                <button class="m-save" id="ed-m-save">💾 保存</button>
+                <button type="button" class="m-cancel" id="ed-m-cancel">
+                    キャンセル
+                </button>
+
+                <button type="button" class="m-save" id="ed-m-save">
+                    💾 保存
+                </button>
             </div>
         </div>
     </div>
 
-    <div class="modal-ov" id="ed-move-modal">
+    <!-- =========================================================
+         MOVE MODAL
+    ========================================================== -->
+    <div class="modal-ov" id="ed-move-modal" role="dialog" aria-modal="true" aria-labelledby="ed-move-title">
         <div class="modal-box" id="ed-move-box">
-            <h3>📁 移動先フォルダを選択</h3>
+            <h3 id="ed-move-title">
+                📁 移動先フォルダを選択
+            </h3>
+
             <div id="ed-move-list"></div>
-            <button id="ed-move-cancel">キャンセル</button>
+
+            <button type="button" id="ed-move-cancel">
+                キャンセル
+            </button>
         </div>
     </div>
 
-    <div class="modal-ov" id="ed-keys-modal">
+    <!-- =========================================================
+         KEYBOARD SHORTCUT MODAL
+    ========================================================== -->
+    <div class="modal-ov" id="ed-keys-modal" role="dialog" aria-modal="true" aria-labelledby="ed-keys-title">
         <div class="modal-box" id="ed-keys-box">
-            <h3>⌨️ キーボードショートカット</h3>
-            <div class="keys-section">
+            <h3 id="ed-keys-title">
+                ⌨️ キーボードショートカット
+            </h3>
+
+            <section class="keys-section">
                 <h4>ファイル</h4>
-                <div class="key-row"><span class="key-desc">開く</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>O</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">開く</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>O</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">HTML 保存</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>S</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">HTML保存</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>S</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">元に戻す / やり直し</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>Z</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">元に戻す</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>Z</kbd>
+                    </div>
                 </div>
-            </div>
-            <div class="keys-section">
+
+                <div class="key-row">
+                    <span class="key-desc">やり直し</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd>
+                    </div>
+                </div>
+            </section>
+
+            <section class="keys-section">
                 <h4>ナビゲーション</h4>
-                <div class="key-row"><span class="key-desc">開く / 進む</span>
+
+                <div class="key-row">
+                    <span class="key-desc">開く / 進む</span>
                     <div class="keys"><kbd>Enter</kbd></div>
                 </div>
-                <div class="key-row"><span class="key-desc">戻る</span>
-                    <div class="keys"><kbd>Backspace</kbd> / <kbd>Alt</kbd>+<kbd>←</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">親フォルダへ戻る</span>
+                    <div class="keys">
+                        <kbd>Backspace</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">上下移動</span>
-                    <div class="keys"><kbd>↑</kbd> / <kbd>↓</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">上下移動</span>
+                    <div class="keys">
+                        <kbd>↑</kbd> / <kbd>↓</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">先頭 / 末尾</span>
-                    <div class="keys"><kbd>Home</kbd> / <kbd>End</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">先頭 / 末尾</span>
+                    <div class="keys">
+                        <kbd>Home</kbd> / <kbd>End</kbd>
+                    </div>
                 </div>
-            </div>
-            <div class="keys-section">
+            </section>
+
+            <section class="keys-section">
                 <h4>選択・操作</h4>
-                <div class="key-row"><span class="key-desc">追加/範囲選択</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>Click</kbd> / <kbd>Shift</kbd>+<kbd>Click</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">すべて選択</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>A</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">すべて選択</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>A</kbd></div>
-                </div>
-                <div class="key-row"><span class="key-desc">編集</span>
+
+                <div class="key-row">
+                    <span class="key-desc">編集</span>
                     <div class="keys"><kbd>F2</kbd></div>
                 </div>
-                <div class="key-row"><span class="key-desc">削除</span>
+
+                <div class="key-row">
+                    <span class="key-desc">削除</span>
                     <div class="keys"><kbd>Delete</kbd></div>
                 </div>
-                <div class="key-row"><span class="key-desc">URLコピー</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>C</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">URLコピー</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>C</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">新規リンク / フォルダ</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>L</kbd> / <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>N</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">リンク追加</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>L</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">検索</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>F</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">フォルダ追加</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>N</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">タブ操作</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>T</kbd> / <kbd>Ctrl</kbd>+<kbd>W</kbd></div>
+            </section>
+
+            <section class="keys-section">
+                <h4>検索・表示</h4>
+
+                <div class="key-row">
+                    <span class="key-desc">検索</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>F</kbd>
+                    </div>
                 </div>
-                <div class="key-row"><span class="key-desc">プレビュー切替</span>
-                    <div class="keys"><kbd>Ctrl</kbd>+<kbd>P</kbd></div>
+
+                <div class="key-row">
+                    <span class="key-desc">次 / 前の検索結果</span>
+                    <div class="keys">
+                        <kbd>Enter</kbd> /
+                        <kbd>Shift</kbd> + <kbd>Enter</kbd>
+                    </div>
                 </div>
+
+                <div class="key-row">
+                    <span class="key-desc">新しいタブ</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>T</kbd>
+                    </div>
+                </div>
+
+                <div class="key-row">
+                    <span class="key-desc">タブを閉じる</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>W</kbd>
+                    </div>
+                </div>
+
+                <div class="key-row">
+                    <span class="key-desc">プレビュー切替</span>
+                    <div class="keys">
+                        <kbd>Ctrl</kbd> + <kbd>P</kbd>
+                    </div>
+                </div>
+            </section>
+
+            <div class="m-acts">
+                <button type="button" class="m-cancel" id="ed-keys-close">
+                    閉じる
+                </button>
             </div>
-            <div class="m-acts"><button class="m-cancel"
-                    onclick="document.getElementById('ed-keys-modal').classList.remove('show')">閉じる</button></div>
         </div>
     </div>
 
-    <div id="toast"></div>
+    <!-- =========================================================
+         TOAST
+    ========================================================== -->
+    <div id="toast" role="status" aria-live="polite"></div>
 
-    <script>
-        // ═══════════════════ UTILITIES ═══════════════════
-        const $ = s => document.querySelector(s);
-        const $$ = s => document.querySelectorAll(s);
-        const esc = s => s ? String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') : '';
-        const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
-        function toast(msg, type = '') { const t = $('#toast'); t.className = type; t.textContent = msg; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200); }
-
-        function cleanUrl(u) {
-            if (!u) return '';
-            try {
-                const url = new URL(u), p = url.searchParams;
-                ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content', 'utm_id', 'fbclid', 'gclid', 'gclsrc', 'dclid', 'gbraid', 'wbraid', 'msclkid', 'twclid', '_hsenc', '_hsmi', 'mc_cid', 'mc_eid', 'igshid', 'si', 'srsltid', 'feature'].forEach(k => p.delete(k));
-                for (const k of [...p.keys()]) if (/^utm_|clid$|^_hs/.test(k)) p.delete(k);
-                const h = url.hostname.replace(/^www\./, '');
-                if (/google\./.test(h) && url.pathname.includes('/search')) { const keep = new Set(['q', 'tbm', 'tbs', 'start', 'num', 'hl', 'gl']); for (const k of [...p.keys()]) if (!keep.has(k)) p.delete(k); }
-                else if (/amazon\./.test(h)) { const m = url.pathname.match(/\/dp\/([A-Z0-9]{10})/); if (m) return `${url.origin}/dp/${m[1]}`; }
-                else if (/youtube\.com/.test(h) && url.pathname === '/watch') { const v = p.get('v'), t = p.get('t'), l = p.get('list'); if (v) { let c = `${url.origin}/watch?v=${v}`; if (l) c += `&list=${l}`; if (t) c += `&t=${t}`; return c; } }
-                else if (/twitter\.com|x\.com/.test(h)) { const m = url.pathname.match(/\/status\/\d+/); if (m) return `${url.origin}${m[0]}`; }
-                else if (/reddit\.com/.test(h)) return `${url.origin}${url.pathname.replace(/\/$/, '')}`;
-                return url.toString().replace(/\?$/, '');
-            } catch (e) { return u; }
-        }
-
-        function parseMeta(fullTitle) {
-            if (!fullTitle) return { title: '', tags: [], rating: 0 };
-            const tagRe = /#([\w\-]+|[⭐★]+)/gu;
-            const tags = []; let m;
-            while ((m = tagRe.exec(fullTitle)) !== null) tags.push(m[1]);
-            const rTag = tags.find(t => /^[⭐★]+$/.test(t));
-            const rating = rTag ? rTag.length : 0;
-            const otherTags = tags.filter(t => t !== rTag);
-            const title = fullTitle.replace(/#([\w\-]+|[⭐★]+)/gu, '').replace(/\s+/g, ' ').trim();
-            return { title, tags: otherTags, rating: Math.min(5, rating) };
-        }
-        function buildTitle(title, tags, rating) {
-            const parts = [title.trim()];
-            const safe = tags.map(t => t.replace(/[^\w\-]/g, '').slice(0, 30)).filter(Boolean);
-            if (safe.length) parts.push(...safe.map(t => `#${t}`));
-            if (rating > 0) parts.push('#' + '⭐'.repeat(rating));
-            return parts.join(' ');
-        }
-        function renderBadges(tags, rating) {
-            let h = '';
-            if (rating > 0) h += `<span class="star-bd">${'⭐'.repeat(rating)}</span>`;
-            tags.forEach(t => h += `<span class="tag-bd" title="#${esc(t)}">${esc(t)}</span>`);
-            return h;
-        }
-        function favicon(url) { try { const u = new URL(url); return `https://www.google.com/s2/favicons?sz=32&domain=${u.hostname}`; } catch (e) { return ''; } }
-
-        // ═══════════════════ THEME ═══════════════════
-        (function initTheme() {
-            const saved = localStorage.getItem('bmt_theme');
-            if (saved === 'dark') { document.body.classList.add('dark'); $('#theme-toggle').textContent = '☀️ Light'; }
-        })();
-        $('#theme-toggle').addEventListener('click', () => {
-            document.body.classList.toggle('dark');
-            const dark = document.body.classList.contains('dark');
-            $('#theme-toggle').textContent = dark ? '☀️ Light' : '🌙 Dark';
-            localStorage.setItem('bmt_theme', dark ? 'dark' : 'light');
-        });
-
-        // ═══════════════════ TAB SWITCHING ═══════════════════
-        $$('.tab-btn').forEach(b => b.addEventListener('click', () => {
-            $$('.tab-btn').forEach(x => x.classList.remove('active'));
-            $$('.tab-content').forEach(x => x.classList.remove('active'));
-            b.classList.add('active');
-            $('#tab-' + b.dataset.tab).classList.add('active');
-        }));
-
-        // ═══════════════════ MERGER ═══════════════════
-        let mMap = new Map(), mFileCount = 0;
-        const mDrop = $('#m-drop'), mFI = $('#m-file-input');
-        mDrop.addEventListener('click', () => mFI.click());
-        mDrop.addEventListener('dragover', e => { e.preventDefault(); mDrop.classList.add('dragover'); });
-        mDrop.addEventListener('dragleave', () => mDrop.classList.remove('dragover'));
-        mDrop.addEventListener('drop', e => { e.preventDefault(); mDrop.classList.remove('dragover'); mLoad(e.dataTransfer.files); });
-        mFI.addEventListener('change', e => mLoad(e.target.files));
-        async function mLoad(files) {
-            if (!files.length) return;
-            mMap.clear(); mFileCount = files.length;
-            $('#m-chips').innerHTML = Array.from(files).map(f => `<span class="file-chip">📄 ${esc(f.name)}</span>`).join('');
-            const logEl = $('#m-log'); logEl.textContent = `📂 読み込み中...\n`;
-            $('#m-result').style.display = 'block';
-            const cs = await Promise.all(Array.from(files).map(f => new Promise(r => { const rd = new FileReader(); rd.onload = e => r(e.target.result); rd.readAsText(f); })));
-            const p = new DOMParser(); let tot = 0;
-            cs.forEach((html, fi) => {
-                const lnks = p.parseFromString(html, 'text/html').querySelectorAll('a');
-                logEl.textContent += `ファイル ${fi + 1}: ${lnks.length}件\n`; tot += lnks.length;
-                lnks.forEach(a => {
-                    const url = cleanUrl(a.getAttribute('href')); if (!url || !url.startsWith('http')) return;
-                    let h = 'Others'; try { h = new URL(url).hostname; } catch (e) { }
-                    if (!mMap.has(url)) mMap.set(url, { title: a.textContent.trim() || url, url, addDate: a.getAttribute('add_date') || Math.floor(Date.now() / 1000), hostname: h, fi: new Set() });
-                    mMap.get(url).fi.add(fi);
-                });
-            });
-            const all = [...mMap.values()], diff = all.filter(i => i.fi.size === 1);
-            logEl.textContent += `──────\n総: ${tot} / ユニーク: ${all.length} / 差分: ${diff.length}\n`;
-            $('#m-s-total').textContent = tot.toLocaleString();
-            $('#m-s-merged').textContent = all.length.toLocaleString();
-            $('#m-s-diff').textContent = diff.length.toLocaleString();
-            $('#m-dl-merge').disabled = false;
-            $('#m-dl-diff').disabled = mFileCount < 2 || diff.length === 0;
-            $('#m-to-editor').disabled = false;
-        }
-        function mBuildHTML(bm) {
-            const g = {}; bm.forEach(b => { (g[b.hostname] ??= []).push(b); });
-            let html = `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n<TITLE>Bookmarks</TITLE>\n<H1>Bookmarks</H1>\n<DL><p>\n`;
-            for (const [h, items] of Object.entries(g)) {
-                html += `    <DT><H3 ADD_DATE="${Math.floor(Date.now() / 1000)}">${esc(h)}</H3>\n    <DL><p>\n`;
-                items.forEach(i => { html += `        <DT><A HREF="${esc(i.url)}" ADD_DATE="${i.addDate}">${esc(i.title)}</A>\n`; });
-                html += `    </DL><p>\n`;
-            }
-            return html + `</DL><p>`;
-        }
-        function mDL(bm, pf) {
-            const html = mBuildHTML(bm);
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-            a.download = `bookmarks_${pf}_${new Date().toISOString().slice(0, 10)}.html`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
-            $('#m-log').textContent += `💾 DL完了 (${bm.length}件)\n`;
-        }
-        $('#m-dl-merge').addEventListener('click', () => mDL([...mMap.values()].sort((a, b) => a.hostname.localeCompare(b.hostname)), 'merged'));
-        $('#m-dl-diff').addEventListener('click', () => mDL([...mMap.values()].filter(i => i.fi.size === 1).sort((a, b) => a.hostname.localeCompare(b.hostname)), 'diff'));
-        $('#m-to-editor').addEventListener('click', () => {
-            const html = mBuildHTML([...mMap.values()].sort((a, b) => a.hostname.localeCompare(b.hostname)));
-            edLoad(html); $$('.tab-btn').forEach(b => b.classList.remove('active'));
-            $$('.tab-content').forEach(c => c.classList.remove('active'));
-            document.querySelector('[data-tab="editor"]').classList.add('active');
-            $('#tab-editor').classList.add('active');
-            toast('エディタで開きました', 'ok');
-        });
-
-        // ═══════════════════ EDITOR STATE ═══════════════════
-        let edTree = [], edPath = [], edExpanded = new Set(), edSelection = new Set();
-        let edIdCtr = 0, edEditingId = null, edSearch = '', edSearchDeep = true, edLastSel = null, edActiveId = null;
-        let edFilterType = 'all', edFilterRating = 0, edFilterTag = '', edSortBy = 'default';
-        let edDndPos = null, edRafId = null;
-        let edTabs = [{ path: [], sel: new Set(), scroll: 0, search: '', label: '🏠 Root', pinned: false }], edActiveTab = 0;
-        let edUndoStack = [], edRedoStack = [], edUndoMax = 50;
-        let edDirty = false, edShowDup = false, edPreviewOn = true;
-        let edDupSet = new Set(); // 重複URLセット
-
-        const edSS = msg => $('#ed-sb-msg').textContent = msg;
-        const edGenId = () => 'bm_' + (++edIdCtr);
-        function edFind(id, ns = edTree) { for (const n of ns) { if (n.id === id) return n; if (n.children) { const r = edFind(id, n.children); if (r) return r; } } }
-        function edFindArr(id, ns = edTree) { for (const n of ns) { if (n.id === id) return ns; if (n.children) { const r = edFindArr(id, n.children); if (r) return r; } } }
-        function edCL(n) { return n.type === 'link' ? 1 : (n.children || []).reduce((s, c) => s + edCL(c), 0); }
-        function edCA(ns = edTree) { let l = 0, f = 0; const w = a => a.forEach(n => { if (n.type === 'link') l++; else { f++; w(n.children || []); } }); w(ns); return { links: l, folders: f }; }
-        function edCI() { if (!edPath.length) return edTree; return edFind(edPath[edPath.length - 1].id)?.children ?? edTree; }
-
-        // ── Undo/Redo ──
-        function edSnap() {
-            edUndoStack.push(JSON.stringify(edTree));
-            if (edUndoStack.length > edUndoMax) edUndoStack.shift();
-            edRedoStack = [];
-            edDirty = true;
-            edUpdateUndoBtn();
-            edAutosave();
-        }
-        function edUpdateUndoBtn() {
-            $('#tb-undo').disabled = edUndoStack.length === 0;
-            $('#tb-redo').disabled = edRedoStack.length === 0;
-            $('#sb-dirty').style.display = edDirty ? 'inline-block' : 'none';
-        }
-        function edUndo() {
-            if (!edUndoStack.length) return;
-            edRedoStack.push(JSON.stringify(edTree));
-            edTree = JSON.parse(edUndoStack.pop());
-            edSelection.clear(); edRenderAll(); edUpdateUndoBtn(); toast('元に戻しました');
-        }
-        function edRedo() {
-            if (!edRedoStack.length) return;
-            edUndoStack.push(JSON.stringify(edTree));
-            edTree = JSON.parse(edRedoStack.pop());
-            edSelection.clear(); edRenderAll(); edUpdateUndoBtn(); toast('やり直しました');
-        }
-
-        // ── Autosave ──
-        const edAutosave = debounce(() => {
-            try { localStorage.setItem('bmt_data', JSON.stringify({ tree: edTree, saved: Date.now() })); $('#sb-autosave').style.display = 'inline-block'; setTimeout(() => $('#sb-autosave').style.display = 'none', 1500); } catch (e) { }
-        }, 1200);
-        function edLoadAutosave() {
-            try {
-                const raw = localStorage.getItem('bmt_data');
-                if (!raw) return false;
-                const d = JSON.parse(raw);
-                if (!d.tree || !Array.isArray(d.tree)) return false;
-                if (confirm(`前回の作業データが見つかりました（${new Date(d.saved).toLocaleString()}）。復元しますか？`)) {
-                    edTree = d.tree;
-                    // Fix IDs
-                    let maxId = 0;
-                    function walk(ns) { ns.forEach(n => { if (n.id) { const m = /bm_(\d+)/.exec(n.id); if (m) maxId = Math.max(maxId, +m[1]); } else n.id = edGenId(); if (n.children) walk(n.children); }); }
-                    walk(edTree); edIdCtr = maxId;
-                    edTree.filter(n => n.type === 'folder').forEach(n => edExpanded.add(n.id));
-                    edRenderAll(); toast('復元しました', 'ok');
-                    return true;
-                }
-            } catch (e) { }
-            return false;
-        }
-
-        // ── Duplicates detection ──
-        function edComputeDup() {
-            edDupSet.clear();
-            const seen = new Map();
-            function walk(ns) { ns.forEach(n => { if (n.type === 'link' && n.url) { if (seen.has(n.url)) { edDupSet.add(seen.get(n.url)); edDupSet.add(n.id); } else seen.set(n.url, n.id); } if (n.children) walk(n.children); }); }
-            walk(edTree);
-            return edDupSet.size;
-        }
-        function edDedupAll() {
-            const n = edComputeDup();
-            if (n === 0) { toast('重複はありません', 'ok'); return; }
-            if (!confirm(`${edDupSet.size}件の重複を検出。最初のものを残して削除しますか？`)) return;
-            edSnap();
-            const seen = new Set();
-            function walk(ns) {
-                for (let i = ns.length - 1; i >= 0; i--) {
-                    const n = ns[i];
-                    if (n.type === 'link' && n.url) { if (seen.has(n.url)) ns.splice(i, 1); else seen.add(n.url); }
-                    if (n.children) walk(n.children);
-                }
-            }
-            walk(edTree);
-            edDupSet.clear();
-            edRenderAll(); toast(`${n} 件の重複を削除しました`, 'ok');
-        }
-
-        // ── Parse ──
-        function edParse(html) {
-            edIdCtr = 0;
-            const doc = new DOMParser().parseFromString(html, 'text/html');
-            function procDL(dl) {
-                if (!dl) return []; const res = [];
-                for (const el of Array.from(dl.children)) {
-                    if (el.tagName !== 'DT' && el.tagName !== 'DD') continue;
-                    const a = el.querySelector(':scope > a,:scope > A');
-                    const h3 = el.querySelector(':scope > h3,:scope > H3');
-                    const sub = el.querySelector(':scope > dl,:scope > DL');
-                    if (a) { const url = cleanUrl(a.getAttribute('href') || ''); res.push({ id: edGenId(), type: 'link', title: a.textContent.trim() || url || 'Untitled', url, addDate: parseInt(a.getAttribute('add_date') || a.getAttribute('ADD_DATE')) || Math.floor(Date.now() / 1000) }); }
-                    else if (h3) { res.push({ id: edGenId(), type: 'folder', title: h3.textContent.trim() || 'Folder', addDate: parseInt(h3.getAttribute('add_date') || h3.getAttribute('ADD_DATE')) || Math.floor(Date.now() / 1000), children: procDL(sub) }); }
-                }
-                return res;
-            }
-            const rootDL = doc.querySelector('dl,DL');
-            if (rootDL) return procDL(rootDL);
-            return Array.from(doc.querySelectorAll('a,A')).map(a => ({ id: edGenId(), type: 'link', title: a.textContent.trim() || a.getAttribute('href') || 'Untitled', url: cleanUrl(a.getAttribute('href') || ''), addDate: Math.floor(Date.now() / 1000) }));
-        }
-        function edLoad(html) {
-            edTree = edParse(html); edPath = []; edExpanded.clear(); edSearch = ''; edSelection.clear();
-            edTree.filter(n => n.type === 'folder').forEach(n => edExpanded.add(n.id));
-            edTabs = [{ path: [], sel: new Set(), scroll: 0, search: '', label: '🏠 Root', pinned: false }]; edActiveTab = 0;
-            edUndoStack = []; edRedoStack = []; edDirty = false;
-            edRenderAll(); edRenderTabBar();
-        }
-        function edSerialize() {
-            function toH(ns, d) { const i = '    '.repeat(d); let s = `${i}<DL><p>\n`; for (const n of ns) { if (n.type === 'link') s += `${i}    <DT><A HREF="${esc(n.url)}" ADD_DATE="${n.addDate}">${esc(n.title)}</A>\n`; else { s += `${i}    <DT><H3 ADD_DATE="${n.addDate}">${esc(n.title)}</H3>\n`; s += toH(n.children || [], d + 1); } } return s + `${i}</DL><p>\n`; }
-            return `<!DOCTYPE NETSCAPE-Bookmark-file-1>\n<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">\n<TITLE>Bookmarks</TITLE>\n<H1>Bookmarks</H1>\n${toH(edTree, 0)}`;
-        }
-
-        // ── Filter/Sort ──
-        function edApply(items) {
-            let r = [...items];
-            if (edFilterType === 'link') r = r.filter(i => i.type === 'link');
-            else if (edFilterType === 'folder') r = r.filter(i => i.type === 'folder');
-            if (edFilterTag) { const q = edFilterTag.toLowerCase(); r = r.filter(i => parseMeta(i.title).tags.some(t => t.toLowerCase().includes(q))); }
-            if (edFilterRating > 0) r = r.filter(i => parseMeta(i.title).rating >= edFilterRating);
-            if (edSortBy !== 'default') {
-                r.sort((a, b) => {
-                    const ma = parseMeta(a.title), mb = parseMeta(b.title);
-                    switch (edSortBy) {
-                        case 'name': return ma.title.localeCompare(mb.title, undefined, { sensitivity: 'base' });
-                        case 'name-d': return mb.title.localeCompare(ma.title, undefined, { sensitivity: 'base' });
-                        case 'rating': return mb.rating - ma.rating;
-                        case 'rating-d': return ma.rating - mb.rating;
-                        case 'url': return (a.url || '').localeCompare(b.url || '');
-                        case 'date': return (b.addDate || 0) - (a.addDate || 0);
-                        case 'date-d': return (a.addDate || 0) - (b.addDate || 0);
-                        default: return 0;
-                    }
-                });
-            }
-            return r;
-        }
-
-        // ═══════════════════ RENDER ═══════════════════
-        function edRenderAll() {
-            if (edRafId) return;
-            edRafId = requestAnimationFrame(() => {
-                edRafId = null;
-                edRenderTree(); edRenderBreadcrumb(); edRenderContent(); edUpdateStats();
-                edRenderTabBar(); edUpdateToolbar();
-                $('#tb-export').disabled = edTree.length === 0;
-                $('#tb-export-json').disabled = edTree.length === 0;
-                $('#tb-dedup').disabled = edTree.length === 0;
-                $('#tb-find-dup').disabled = edTree.length === 0;
-            });
-        }
-        function edUpdateStats() {
-            const { links, folders } = edCA();
-            $('#ed-stats').textContent = `${links.toLocaleString()} L · ${folders} F`;
-            $('#ed-sb-counts').textContent = `${links.toLocaleString()} リンク / ${folders} フォルダ`;
-        }
-        function edUpdateToolbar() {
-            const n = edSelection.size, single = n === 1;
-            $('#tb-sel-group').classList.toggle('disabled', n === 0);
-            $('#tb-edit').disabled = !single;
-            const hasLinks = [...edSelection].some(id => edFind(id)?.type === 'link');
-            $('#tb-copy-url').disabled = !hasLinks;
-            $('#tb-add-link').disabled = edTree.length === 0;
-            $('#tb-add-folder').disabled = edTree.length === 0;
-        }
-
-        function edRenderTree() {
-            const sc = $('#ed-tree-scroll');
-            const folders = edTree.filter(n => n.type === 'folder');
-            if (!edTree.length) { sc.innerHTML = '<div class="tree-empty">ファイルを開いて<br>開始してください</div>'; return; }
-            if (!folders.length) { sc.innerHTML = '<div class="tree-empty" style="color:var(--accent);">フォルダなし<br>Root直下にリンクがあります</div>'; return; }
-            const selId = edPath.length ? edPath[edPath.length - 1].id : null;
-            function rN(n, d) {
-                if (n.type !== 'folder') return '';
-                const isSel = n.id === selId, isExp = edExpanded.has(n.id);
-                const subs = (n.children || []).filter(c => c.type === 'folder'), cnt = edCL(n);
-                let h = `<div class="tn${isSel ? ' selected' : ''}" data-id="${n.id}" oncontextmenu="edCtx(event,'${n.id}')">`;
-                h += `<span class="tn-ind" style="width:${d * 14}px;flex-shrink:0;"></span>`;
-                h += subs.length ? `<span class="tn-tog" onclick="event.stopPropagation();edToggle('${n.id}')">${isExp ? '▼' : '▶'}</span>` : '<span class="tn-tog-ph"></span>';
-                h += `<div class="tn-body" onclick="edTreeClick('${n.id}',event)"><span class="tn-ico">📁</span><span class="tn-lbl">${esc(parseMeta(n.title).title || n.title)}</span><span class="tn-cnt">${cnt}</span></div></div>`;
-                if (isExp) subs.forEach(c => h += rN(c, d + 1));
-                return h;
-            }
-            sc.innerHTML = folders.map(n => rN(n, 0)).join('');
-        }
-        function edRenderBreadcrumb() {
-            let h = `<span class="bc-item" onclick="edNavRoot()">🏠 Root</span>`;
-            edPath.forEach((seg, i) => {
-                h += '<span class="bc-sep">›</span>';
-                if (i === edPath.length - 1) h += `<span class="bc-cur">📁 ${esc(parseMeta(seg.title).title || seg.title)}</span>`;
-                else h += `<span class="bc-item" onclick="edNavPath(${i})">📁 ${esc(parseMeta(seg.title).title || seg.title)}</span>`;
-            });
-            $('#ed-breadcrumb').innerHTML = h;
-        }
-        function edSearchAll(q) {
-            let matcher;
-            const rxMatch = q.match(/^\/(.+)\/([gimsuy]*)$/);
-            if (rxMatch) { try { const rx = new RegExp(rxMatch[1], rxMatch[2] || 'i'); matcher = s => rx.test(s); } catch (e) { matcher = s => s.toLowerCase().includes(q.toLowerCase()); } }
-            else { const lq = q.toLowerCase(); matcher = s => s.toLowerCase().includes(lq); }
-            const res = [];
-            function walk(ns, path) {
-                for (const n of ns) {
-                    const { title, tags } = parseMeta(n.title);
-                    if (matcher(title) || (n.url && matcher(n.url)) || tags.some(t => matcher(t))) res.push({ node: n, path: path.slice() });
-                    if (n.children?.length) walk(n.children, [...path, n.title]);
-                }
-            }
-            walk(edTree, []); return res;
-        }
-        function edRenderContent() {
-            const list = $('#ed-content-list');
-            if (edShowDup) edComputeDup();
-
-            if (edSearch && edSearchDeep) {
-                const res = edSearchAll(edSearch);
-                if (!res.length) { list.innerHTML = `<div class="ed-empty"><span class="big-ico">🔍</span><span>「${esc(edSearch)}」の結果なし</span></div>`; return; }
-                list.innerHTML = res.map(({ node: n, path }) => renderCI(n, { searchPath: path.map(p => parseMeta(p).title || p).join(' › ') })).join('');
-                edSelection.size > 0 ? list.classList.add('has-sel') : list.classList.remove('has-sel');
-                return;
-            }
-
-            let items = edCI();
-            if (edSearch) {
-                const rxMatch = edSearch.match(/^\/(.+)\/([gimsuy]*)$/);
-                let matcher;
-                if (rxMatch) { try { const rx = new RegExp(rxMatch[1], rxMatch[2] || 'i'); matcher = s => rx.test(s); } catch (e) { const lq = edSearch.toLowerCase(); matcher = s => s.toLowerCase().includes(lq); } }
-                else { const lq = edSearch.toLowerCase(); matcher = s => s.toLowerCase().includes(lq); }
-                items = items.filter(i => { const { title, tags } = parseMeta(i.title); return matcher(title) || (i.url && matcher(i.url)) || tags.some(t => matcher(t)); });
-            }
-            items = edApply(items);
-
-            if (!items.length) { list.innerHTML = `<div class="ed-empty"><span class="big-ico">${edSearch || edFilterType !== 'all' || edFilterRating || edFilterTag ? '🔍' : '📭'}</span><span>${edSearch ? '結果なし' : 'このフォルダは空です'}</span></div>`; return; }
-            edSelection.size > 0 ? list.classList.add('has-sel') : list.classList.remove('has-sel');
-            list.innerHTML = items.map((it, idx) => renderCI(it, { idx, total: items.length })).join('');
-        }
-        function renderCI(item, opts = {}) {
-            const sel = edSelection.has(item.id);
-            const active = edActiveId === item.id;
-            const { title, tags, rating } = parseMeta(item.title);
-            const badges = renderBadges(tags, rating);
-            const isDup = edShowDup && edDupSet.has(item.id);
-            const classList = ['ci'];
-            if (sel) classList.push('selected');
-            if (active) classList.push('active');
-            if (isDup) classList.push('dup-url');
-
-            const dnd = opts.searchPath ? '' : `draggable="true" ondragstart="edDragStart('${item.id}',event)" ondragover="edDragOver('${item.id}',event)" ondragleave="edDragLeave(event)" ondrop="edDrop('${item.id}',event)" ondragend="edDragEnd()"`;
-
-            if (item.type === 'link') {
-                const fav = favicon(item.url);
-                const icon = fav ? `<img src="${fav}" onerror="this.style.display='none';this.nextSibling.style.display='inline';"><span style="display:none;">🔗</span>` : '🔗';
-                return `<div class="${classList.join(' ')}" data-id="${item.id}" ${dnd}
-  onclick="edSelClick('${item.id}',event)"
-  ondblclick="event.stopPropagation();window.open('${esc(item.url)}','_blank')"
-  oncontextmenu="edCtx(event,'${item.id}')">
-  <div class="ci-chk-col"><input type="checkbox" class="ci-chk" ${sel ? 'checked' : ''} onclick="event.stopPropagation();edChkToggle('${item.id}')"></div>
-  <div class="ci-sel">
-    <span class="ci-ico">${icon}</span>
-    <div class="ci-info">
-      <div class="ci-ttl">${esc(title)}${badges ? '<span style="margin-left:5px;">' + badges + '</span>' : ''}</div>
-      <div class="ci-meta-row">${opts.searchPath ? `<span class="ci-path">📁 ${esc(opts.searchPath || 'Root')}</span>` : `<span class="ci-url"><a href="${esc(item.url)}" target="_blank" onclick="event.stopPropagation()">${esc(item.url)}</a></span>`}</div>
-    </div>
-  </div>
-  <div class="ci-acts">
-    ${opts.searchPath ? `<button class="ia-btn" onclick="event.stopPropagation();edGoToFolder('${item.id}')" title="フォルダを開く">📂</button>` : ''}
-    <button class="ia-btn" onclick="event.stopPropagation();window.open('${esc(item.url)}','_blank')" ${!item.url ? 'disabled' : ''} title="新しいタブで開く">↗</button>
-    <button class="ia-btn" onclick="event.stopPropagation();edOpenModal('${item.id}')" title="編集">✏️</button>
-    ${opts.searchPath ? '' : `<button class="ia-btn" onclick="edMove('${item.id}',-1)" ${opts.idx === 0 ? 'disabled' : ''}>↑</button><button class="ia-btn" onclick="edMove('${item.id}',1)" ${opts.idx === opts.total - 1 ? 'disabled' : ''}>↓</button>`}
-    <button class="ia-btn ia-del" onclick="event.stopPropagation();edDelete('${item.id}')" title="削除">🗑️</button>
-  </div>
-</div>`;
-            }
-            const lc = (item.children || []).reduce((s, c) => s + edCL(c), 0), fc = (item.children || []).filter(c => c.type === 'folder').length;
-            return `<div class="${classList.join(' ')}" data-id="${item.id}" ${dnd}
-  ondblclick="edOpenSub('${item.id}')"
-  oncontextmenu="edCtx(event,'${item.id}')"
-  style="border-left:3px solid ${sel ? 'var(--accent)' : 'var(--border)'};">
-  <div class="ci-chk-col"><input type="checkbox" class="ci-chk" ${sel ? 'checked' : ''} onclick="event.stopPropagation();edChkToggle('${item.id}')"></div>
-  <div class="ci-nav" onclick="edFolderNav('${item.id}',event)">
-    <span class="ci-ico">📁</span>
-    <div class="ci-info">
-      <div class="ci-ttl">${esc(title)}${badges ? '<span style="margin-left:5px;">' + badges + '</span>' : ''}</div>
-      <div class="ci-meta-row">${opts.searchPath ? `<span class="ci-path">📁 ${esc(opts.searchPath || 'Root')} • ${lc} リンク</span>` : `<span class="ci-sub">${lc} リンク · ${fc} フォルダ</span>`}</div>
-    </div>
-    <span class="ci-nav-hint">↵ 開く</span>
-  </div>
-  <div class="ci-acts">
-    <button class="ia-btn" onclick="event.stopPropagation();edOpenSub('${item.id}')" title="開く">📂</button>
-    <button class="ia-btn" onclick="event.stopPropagation();edOpenSubNewTab('${item.id}')" title="新しいタブ">➕</button>
-    ${opts.searchPath ? '' : `<button class="ia-btn" onclick="edMove('${item.id}',-1)" ${opts.idx === 0 ? 'disabled' : ''}>↑</button><button class="ia-btn" onclick="edMove('${item.id}',1)" ${opts.idx === opts.total - 1 ? 'disabled' : ''}>↓</button>`}
-    <button class="ia-btn ia-del" onclick="event.stopPropagation();edDelete('${item.id}')">🗑️</button>
-  </div>
-</div>`;
-        }
-        function edFolderNav(id, event) { if (event.ctrlKey || event.metaKey) { edSelClick(id, event); return; } edOpenSub(id); }
-
-        // ═══════════════════ PREVIEW ═══════════════════
-        let edPreviewTimer = null;
-        function edPreview(id) {
-            edActiveId = id;
-            const wrap = $('#ed-preview-frame-wrap'), iframe = $('#ed-preview-iframe'), fb = $('#ed-preview-fallback'), load = $('#ed-preview-loading');
-            const n = edFind(id);
-            if (!n || n.type !== 'link' || !n.url) {
-                iframe.src = 'about:blank'; fb.classList.remove('show'); load.classList.remove('show');
-                $('#ed-preview-title').textContent = 'プレビュー';
-                $('#preview-open').style.display = 'none'; $('#preview-reload').style.display = 'none';
-                return;
-            }
-            $('#ed-preview-title').textContent = parseMeta(n.title).title || n.url;
-            $('#preview-open').style.display = 'inline-block'; $('#preview-reload').style.display = 'inline-block';
-            $('#fb-url').textContent = n.url;
-            $('#fb-link').href = n.url;
-            fb.classList.remove('show');
-            load.classList.add('show');
-            clearTimeout(edPreviewTimer);
-            // Load with timeout fallback
-            let loaded = false;
-            iframe.onload = () => { loaded = true; load.classList.remove('show'); };
-            iframe.onerror = () => { load.classList.remove('show'); fb.classList.add('show'); };
-            iframe.src = n.url;
-            edPreviewTimer = setTimeout(() => {
-                load.classList.remove('show');
-                // Check if iframe loaded content (heuristic)
-                try {
-                    if (!iframe.contentDocument || iframe.contentDocument.body?.children.length === 0) {
-                        // May be blocked - show fallback but keep iframe
-                    }
-                } catch (e) { /* cross-origin, that's fine */ }
-            }, 4500);
-        }
-        $('#preview-open').addEventListener('click', () => { const n = edFind(edActiveId); if (n?.url) window.open(n.url, '_blank'); });
-        $('#preview-reload').addEventListener('click', () => { const f = $('#ed-preview-iframe'); f.src = f.src; });
-
-        // ═══════════════════ NAVIGATION ═══════════════════
-        function edBuildPath(tid, ns = edTree, p = []) {
-            for (const n of ns) { if (n.type !== 'folder') continue; const np = [...p, { id: n.id, title: n.title }]; if (n.id === tid) return np; if (n.children) { const r = edBuildPath(tid, n.children, np); if (r) return r; } }
-        }
-        function edTreeClick(id, event) {
-            if (event.ctrlKey || event.metaKey) { edSelClick(id, event); return; }
-            edPath = edBuildPath(id) || []; edExpanded.add(id);
-            edSearch = ''; $('#ed-search-input').value = '';
-            edSelection.clear(); edRenderAll(); edTabSync();
-        }
-        function edToggle(id) { edExpanded.has(id) ? edExpanded.delete(id) : edExpanded.add(id); edRenderTree(); }
-        function edNavRoot() { edPath = []; edSearch = ''; $('#ed-search-input').value = ''; edSelection.clear(); edRenderAll(); edTabSync(); }
-        function edNavPath(i) { edPath = edPath.slice(0, i + 1); edSearch = ''; edSelection.clear(); edRenderAll(); edTabSync(); }
-        function edNavUp() { if (edPath.length) { edPath.pop(); edSearch = ''; edSelection.clear(); edRenderAll(); edTabSync(); } }
-        function edOpenSub(id) {
-            const n = edFind(id); if (!n || n.type !== 'folder') return;
-            edPath = [...edPath, { id: n.id, title: n.title }]; edExpanded.add(id);
-            edSearch = ''; edSelection.clear(); edRenderAll(); edTabSync();
-        }
-        function edGoToFolder(itemId) {
-            function fp(ns, tid, acc) { for (const n of ns) { if (n.id === tid) return acc; if (n.children) { const r = fp(n.children, tid, [...acc, { id: n.id, title: n.title }]); if (r !== null) return r; } } return null; }
-            const path = fp(edTree, itemId, []);
-            if (path === null) return;
-            edPath = path; edSearch = ''; $('#ed-search-input').value = '';
-            edRenderAll(); edTabSync();
-            setTimeout(() => document.querySelector(`#ed-content-list .ci[data-id="${itemId}"]`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 80);
-        }
-
-        // ═══════════════════ SELECTION ═══════════════════
-        function edSelClick(id, event) {
-            if (event.shiftKey && edLastSel) {
-                const ids = edCI().map(i => i.id), i1 = ids.indexOf(edLastSel), i2 = ids.indexOf(id);
-                if (i1 !== -1 && i2 !== -1) { const [s, e2] = [Math.min(i1, i2), Math.max(i1, i2)]; for (let i = s; i <= e2; i++) edSelection.add(ids[i]); }
-            } else if (event.ctrlKey || event.metaKey) {
-                edSelection.has(id) ? edSelection.delete(id) : edSelection.add(id); edLastSel = id;
-            } else { edSelection.clear(); edSelection.add(id); edLastSel = id; }
-            edUpdateSelUI();
-            // Auto preview on single link selection
-            if (edSelection.size === 1) { const n = edFind(id); if (n?.type === 'link' && edPreviewOn) edPreview(id); }
-        }
-        function edChkToggle(id) { edSelection.has(id) ? edSelection.delete(id) : edSelection.add(id); edLastSel = id; edUpdateSelUI(); }
-        function edUpdateSelUI() {
-            $$('#ed-content-list .ci[data-id]').forEach(el => {
-                const sel = edSelection.has(el.dataset.id);
-                el.classList.toggle('selected', sel);
-                el.classList.toggle('active', edActiveId === el.dataset.id);
-                const chk = el.querySelector('.ci-chk'); if (chk) chk.checked = sel;
-            });
-            $('#ed-content-list').classList.toggle('has-sel', edSelection.size > 0);
-            edUpdateToolbar();
-        }
-
-        // ═══════════════════ CRUD ═══════════════════
-        function edAddLink() { edSnap(); const n = { id: edGenId(), type: 'link', title: '新しいリンク', url: '', addDate: Math.floor(Date.now() / 1000) }; edCI().push(n); edSelection.clear(); edSelection.add(n.id); edRenderAll(); edSS('✅ リンクを追加'); setTimeout(() => edOpenModal(n.id), 50); }
-        function edAddFolder() { edSnap(); const n = { id: edGenId(), type: 'folder', title: '新しいフォルダ', addDate: Math.floor(Date.now() / 1000), children: [] }; edCI().push(n); edSelection.clear(); edSelection.add(n.id); edRenderAll(); edSS('✅ フォルダを追加'); setTimeout(() => edOpenModal(n.id), 50); }
-        function edAddRoot() { edSnap(); const n = { id: edGenId(), type: 'folder', title: '新しいフォルダ', addDate: Math.floor(Date.now() / 1000), children: [] }; edTree.push(n); edExpanded.add(n.id); edRenderAll(); edSS('✅ ルートフォルダを追加'); setTimeout(() => edOpenModal(n.id), 50); }
-        function edDelete(id) {
-            const n = edFind(id); if (!n) return;
-            const cnt = n.type === 'folder' ? edCL(n) : 0;
-            if (!confirm(n.type === 'folder' && cnt > 0 ? `「${parseMeta(n.title).title || n.title}」と中の${cnt}件を削除しますか？` : `「${parseMeta(n.title).title || n.title}」を削除しますか？`)) return;
-            edSnap();
-            const arr = edFindArr(id); if (arr) { const i = arr.findIndex(x => x.id === id); if (i !== -1) arr.splice(i, 1); }
-            if (edPath.some(s => s.id === id)) edPath = edPath.slice(0, edPath.findIndex(s => s.id === id));
-            edSelection.delete(id); edRenderAll(); edSS(`🗑️ 削除しました`);
-        }
-        function edDeleteSel() {
-            if (!edSelection.size) return;
-            if (!confirm(`${edSelection.size}件を削除しますか？`)) return;
-            edSnap();
-            for (const id of [...edSelection]) { const arr = edFindArr(id); if (!arr) continue; const i = arr.findIndex(n => n.id === id); if (i !== -1) arr.splice(i, 1); if (edPath.some(s => s.id === id)) edPath = edPath.slice(0, edPath.findIndex(s => s.id === id)); }
-            edSelection.clear(); edRenderAll(); edSS('🗑️ 削除しました');
-        }
-        function edMove(id, dir) { edSnap(); const arr = edFindArr(id); if (!arr) return; const i = arr.findIndex(n => n.id === id), ni = i + dir; if (ni < 0 || ni >= arr.length) return;[arr[i], arr[ni]] = [arr[ni], arr[i]]; edRenderContent(); edSS('✅ 移動しました'); }
-
-        function edBulkMove() {
-            if (!edSelection.size) return;
-            const folders = [];
-            function cf(ns, d) { ns.forEach(n => { if (n.type === 'folder' && !edSelection.has(n.id)) { folders.push({ id: n.id, title: parseMeta(n.title).title || n.title, depth: d }); cf(n.children || [], d + 1); } }); }
-            cf(edTree, 0);
-            $('#ed-move-list').innerHTML = `<div class="move-item" onclick="edBulkMoveTo(null)">🏠 Root（ルート直下）</div>` +
-                folders.map(f => `<div class="move-item" onclick="edBulkMoveTo('${f.id}')" style="padding-left:${12 + f.depth * 14}px;">📁 ${esc(f.title)}</div>`).join('');
-            $('#ed-move-modal').classList.add('show');
-        }
-        function edBulkMoveTo(fid) {
-            $('#ed-move-modal').classList.remove('show');
-            edSnap();
-            const dest = fid ? (edFind(fid)?.children ?? edTree) : edTree;
-            for (const id of [...edSelection]) { const src = edFindArr(id); if (!src || src === dest) continue; const i = src.findIndex(n => n.id === id); if (i === -1) continue; const [node] = src.splice(i, 1); dest.push(node); }
-            edSelection.clear(); edRenderAll(); edSS('📁 移動しました');
-        }
-
-        function edCopyUrls(ids) {
-            const urls = ids.map(id => edFind(id)?.url).filter(Boolean);
-            if (!urls.length) { toast('URLがありません', 'err'); return; }
-            navigator.clipboard.writeText(urls.join('\n')).then(() => toast(`${urls.length}件のURLをコピー`, 'ok'));
-        }
-        function edCopyTitles(ids) {
-            const titles = ids.map(id => { const n = edFind(id); return n ? parseMeta(n.title).title : ''; }).filter(Boolean);
-            navigator.clipboard.writeText(titles.join('\n')).then(() => toast(`${titles.length}件のタイトルをコピー`, 'ok'));
-        }
-
-        function edTagDialog(ids) {
-            if (!ids.length) return;
-            const first = edFind(ids[0]);
-            const existing = ids.length === 1 && first ? parseMeta(first.title).tags.join(' ') : '';
-            const tag = prompt('タグを入力（スペース区切り）', existing);
-            if (tag === null) return;
-            edSnap();
-            const newTags = tag.split(/[\s,]+/).map(t => t.replace(/[^\w\-]/g, '').toLowerCase()).filter(Boolean);
-            ids.forEach(id => { const n = edFind(id); if (!n) return; const { title, rating } = parseMeta(n.title); n.title = buildTitle(title, newTags, rating); });
-            edRenderAll(); toast(`🏷️ タグを更新`, 'ok');
-        }
-        function edRateDialog(ids) {
-            if (!ids.length) return;
-            const r = parseInt(prompt('レーティング（0〜5）', ids.length === 1 ? parseMeta(edFind(ids[0])?.title || '').rating : 0));
-            if (isNaN(r) || r < 0 || r > 5) return;
-            edSnap();
-            ids.forEach(id => { const n = edFind(id); if (!n) return; const { title, tags } = parseMeta(n.title); n.title = buildTitle(title, tags, r); });
-            edRenderAll(); toast(`⭐ レーティングを更新`, 'ok');
-        }
-
-        // ═══════════════════ MODAL ═══════════════════
-        let edModalRating = 0;
-        function edOpenModal(id) {
-            const n = edFind(id); if (!n) return; edEditingId = id;
-            const { title, tags, rating } = parseMeta(n.title);
-            $('#ed-modal-title').textContent = n.type === 'link' ? '🔗 リンクを編集' : '📁 フォルダを編集';
-            $('#ed-m-name').value = title;
-            $('#ed-m-url-f').style.display = n.type === 'link' ? 'block' : 'none';
-            if (n.type === 'link') $('#ed-m-url').value = n.url || '';
-            $('#ed-m-tags').value = tags.join(' ');
-            edModalRating = rating; edUpdateStarPicker();
-            const allTags = new Set(); (function w(ns) { ns.forEach(n => { parseMeta(n.title).tags.forEach(t => allTags.add(t)); if (n.children) w(n.children); }); })(edTree);
-            $('#ed-m-tag-sug').innerHTML = [...allTags].slice(0, 12).map(t => `<span class="tag-bd" style="cursor:pointer;" onclick="edAddTagSug('${esc(t)}')">${esc(t)}</span>`).join('');
-            $('#ed-modal').classList.add('show');
-            $('#ed-m-name').focus(); $('#ed-m-name').select();
-        }
-        function edAddTagSug(tag) { const el = $('#ed-m-tags'); const cur = el.value.trim(); const parts = cur.split(/\s+/).filter(Boolean); if (!parts.includes(tag)) el.value = cur ? (cur + ' ' + tag) : tag; }
-        function edUpdateStarPicker() { $$('#ed-m-stars .star-pick').forEach(btn => btn.classList.toggle('on', +btn.dataset.v <= edModalRating)); }
-        $$('#ed-m-stars .star-pick').forEach(btn => {
-            btn.addEventListener('click', () => { edModalRating = edModalRating === +btn.dataset.v ? 0 : +btn.dataset.v; edUpdateStarPicker(); });
-            btn.addEventListener('mouseenter', () => $$('#ed-m-stars .star-pick').forEach(b => b.style.color = +b.dataset.v <= +btn.dataset.v ? 'var(--warn)' : 'var(--border-hover)'));
-            btn.addEventListener('mouseleave', edUpdateStarPicker);
-        });
-        function edSaveModal() {
-            if (!edEditingId) return; const n = edFind(edEditingId); if (!n) return;
-            const t = $('#ed-m-name').value.trim(); if (!t) { toast('タイトルを入力', 'err'); return; }
-            edSnap();
-            const tags = $('#ed-m-tags').value.split(/[\s,]+/).map(x => x.replace(/[^\w\-]/g, '').toLowerCase()).filter(Boolean);
-            n.title = buildTitle(t, tags, edModalRating);
-            if (n.type === 'link') n.url = cleanUrl($('#ed-m-url').value.trim());
-            if (n.type === 'folder') { const s = edPath.find(x => x.id === edEditingId); if (s) s.title = n.title; }
-            edCloseModal(); edRenderAll(); toast('保存しました', 'ok');
-        }
-        function edCloseModal() { edEditingId = null; $('#ed-modal').classList.remove('show'); }
-
-        // ═══════════════════ CONTEXT MENU ═══════════════════
-        function edCtx(e, id) {
-            e.preventDefault(); e.stopPropagation();
-            if (id && !edSelection.has(id)) { edSelection.clear(); edSelection.add(id); edUpdateSelUI(); }
-            const ids = [...edSelection], n0 = ids.length === 1 ? edFind(ids[0]) : null;
-            const isF = n0?.type === 'folder', isL = n0?.type === 'link';
-            const hasL = ids.some(id => edFind(id)?.type === 'link');
-
-            const menuDefs = [
-                isF && { t: '📂 開く', s: 'Enter', f: () => edOpenSub(ids[0]) },
-                isF && { t: '↗ 新しいタブで開く', f: () => edOpenSubNewTab(ids[0]) },
-                isL && { t: '🔗 リンクを開く', s: 'Enter', f: () => window.open(n0.url, '_blank') },
-                isL && { t: '🖼️ プレビュー', f: () => edPreview(ids[0]) },
-                ids.length === 1 && { t: '✏️ 編集', s: 'F2', f: () => edOpenModal(ids[0]) },
-                { sep: true },
-                hasL && { t: '📋 URLをコピー', s: 'Ctrl+C', f: () => edCopyUrls(ids) },
-                hasL && { t: '📝 タイトルをコピー', f: () => edCopyTitles(ids) },
-                { sep: true },
-                ids.length && { t: '⭐ レーティング...', f: () => edRateDialog(ids) },
-                ids.length && { t: '🏷️ タグ編集...', f: () => edTagDialog(ids) },
-                { sep: true },
-                ids.length && { t: '📁 移動...', f: () => edBulkMove() },
-                ids.length && { t: '🗑️ 削除', s: 'Del', f: () => edDeleteSel(), d: true },
-            ].filter(Boolean);
-
-            $('#ed-ctx')?.remove();
-            const menu = document.createElement('div'); menu.id = 'ed-ctx'; menu.className = 'ctx-menu';
-            const actionItems = [];
-            menu.innerHTML = menuDefs.map(m => {
-                if (m.sep) return '<div class="ctx-sep"></div>';
-                actionItems.push(m);
-                return `<div class="ctx-item${m.d ? ' ctx-danger' : ''}" data-ai="${actionItems.length - 1}">${m.t}${m.s ? `<span class="ctx-shortcut">${m.s}</span>` : ''}</div>`;
-            }).join('');
-            document.body.appendChild(menu);
-            const mw = menu.offsetWidth, mh = menu.offsetHeight;
-            menu.style.left = Math.min(e.clientX, innerWidth - mw - 8) + 'px';
-            menu.style.top = Math.min(e.clientY, innerHeight - mh - 8) + 'px';
-            menu.querySelectorAll('.ctx-item').forEach(el => el.addEventListener('click', () => { menu.remove(); actionItems[+el.dataset.ai]?.f?.(); }));
-            setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
-        }
-
-        // ═══════════════════ DnD ═══════════════════
-        function edDragStart(id, event) {
-            edDndPos = null; event.dataTransfer.setData('text/plain', id); event.dataTransfer.effectAllowed = 'move';
-            event.target.style.opacity = '0.4';
-            event.target.addEventListener('dragend', () => { event.target.style.opacity = '1'; $$('.dnd-before,.dnd-after,.dnd-into').forEach(e => e.classList.remove('dnd-before', 'dnd-after', 'dnd-into')); edDndPos = null; }, { once: true });
-        }
-        function edDragOver(id, event) {
-            event.preventDefault();
-            $$('.dnd-before,.dnd-after,.dnd-into').forEach(e => e.classList.remove('dnd-before', 'dnd-after', 'dnd-into'));
-            const ci = event.currentTarget; const rect = ci.getBoundingClientRect(); const rel = (event.clientY - rect.top) / rect.height;
-            const n = edFind(id);
-            if (n?.type === 'folder' && rel > 0.25 && rel < 0.75) { ci.classList.add('dnd-into'); edDndPos = 'into'; }
-            else { const pos = rel < 0.5 ? 'before' : 'after'; ci.classList.add(`dnd-${pos}`); edDndPos = pos; }
-        }
-        function edDragLeave(e) { if (!e.currentTarget.contains(e.relatedTarget)) e.currentTarget.classList.remove('dnd-before', 'dnd-after', 'dnd-into'); }
-        function edDrop(id, event) {
-            event.preventDefault();
-            $$('.dnd-before,.dnd-after,.dnd-into').forEach(e => e.classList.remove('dnd-before', 'dnd-after', 'dnd-into'));
-            const pos = edDndPos; edDndPos = null;
-            const did = event.dataTransfer.getData('text/plain'); if (!did || did === id) return;
-            const dn = edFind(did); if (!dn) return;
-            function isDesc(p, tid) { return (p.children || []).some(c => c.id === tid || (c.type === 'folder' && isDesc(c, tid))); }
-            if (dn.type === 'folder' && id && (did === id || isDesc(dn, id))) { toast('自身の配下には移動できません', 'err'); return; }
-            edSnap();
-            const sArr = edFindArr(did); const sIdx = sArr?.findIndex(n => n.id === did) ?? -1; if (!sArr || sIdx === -1) return;
-            const tNode = edFind(id); const tArr = edFindArr(id); const tIdx = tArr?.findIndex(n => n.id === id) ?? -1;
-            const [node] = sArr.splice(sIdx, 1);
-            if (pos === 'into' && tNode?.type === 'folder') { (tNode.children ??= []).push(node); }
-            else if (tArr && tIdx !== -1) { let ins = tIdx; if (sArr === tArr && sIdx < tIdx) ins--; if (pos === 'after') ins++; tArr.splice(Math.max(0, ins), 0, node); }
-            else edCI().push(node);
-            edRenderAll(); toast('移動しました', 'ok');
-        }
-        function edDragEnd() { edDndPos = null; }
-        $('#ed-content-list').addEventListener('dragover', e => { if (!e.target.closest('.ci')) e.preventDefault(); });
-        $('#ed-content-list').addEventListener('drop', e => {
-            if (e.target.closest('.ci')) return;
-            e.preventDefault(); const did = e.dataTransfer.getData('text/plain'); const sArr = edFindArr(did); if (!sArr) return;
-            const i = sArr.findIndex(n => n.id === did); if (i === -1) return;
-            edSnap(); const [node] = sArr.splice(i, 1); edCI().push(node); edRenderAll(); toast('末尾に移動', 'ok');
-        });
-
-        // ═══════════════════ TABS ═══════════════════
-        function edTabSync() { if (edTabs[edActiveTab]) { edTabs[edActiveTab].path = [...edPath]; edTabs[edActiveTab].label = edPath.length ? `📁 ${parseMeta(edPath[edPath.length - 1].title).title || edPath[edPath.length - 1].title}` : '🏠 Root'; } edRenderTabBar(); }
-        function edRenderTabBar() {
-            $('#ed-content-tabs').innerHTML = edTabs.map((t, i) => `
-    <div class="ed-ctab${i === edActiveTab ? ' active' : ''}${t.pinned ? ' pinned' : ''}" onclick="edSwitchTab(${i})" oncontextmenu="edTabCtx(event,${i})" title="${esc(t.label)}">
-      <span class="ed-ctab-lbl">${esc(t.label)}</span>
-      ${edTabs.length > 1 && !t.pinned ? `<span class="ed-ctab-x" onclick="event.stopPropagation();edCloseTab(${i})">×</span>` : ''}
-    </div>`).join('') + `<button class="ed-ctab-add" onclick="edNewTab()" title="新しいタブ (Ctrl+T)">＋</button>`;
-        }
-        function edTabCtx(e, i) {
-            e.preventDefault();
-            $('#ed-ctx')?.remove();
-            const menu = document.createElement('div'); menu.className = 'ctx-menu';
-            const items = [
-                { t: edTabs[i].pinned ? '📌 ピン解除' : '📌 ピン留め', f: () => { edTabs[i].pinned = !edTabs[i].pinned; edRenderTabBar(); } },
-                { t: '❌ このタブを閉じる', f: () => edCloseTab(i) },
-                { t: '📑 他のタブを閉じる', f: () => { edTabs = edTabs.filter((t, idx) => idx === i || t.pinned); edActiveTab = edTabs.findIndex((_, idx) => idx === 0); edLoadTab(edActiveTab); edRenderTabBar(); } },
-            ];
-            menu.innerHTML = items.map((m, idx) => `<div class="ctx-item" data-i="${idx}">${m.t}</div>`).join('');
-            document.body.appendChild(menu);
-            menu.style.left = e.clientX + 'px'; menu.style.top = e.clientY + 'px';
-            menu.querySelectorAll('.ctx-item').forEach(el => el.addEventListener('click', () => { menu.remove(); items[+el.dataset.i].f(); }));
-            setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 0);
-        }
-        function edSaveTab() { if (edTabs[edActiveTab]) edTabs[edActiveTab] = { ...edTabs[edActiveTab], path: [...edPath], sel: new Set(edSelection), scroll: $('#ed-content-list').scrollTop, search: edSearch, label: edPath.length ? `📁 ${parseMeta(edPath[edPath.length - 1].title).title || edPath[edPath.length - 1].title}` : '🏠 Root' }; }
-        function edLoadTab(i) { const s = edTabs[i]; edPath = [...s.path]; edSelection = new Set(s.sel); edSearch = s.search; edActiveTab = i; $('#ed-search-input').value = edSearch; edRenderAll(); requestAnimationFrame(() => { $('#ed-content-list').scrollTop = s.scroll || 0; }); }
-        function edSwitchTab(i) { if (i === edActiveTab) return; edSaveTab(); edLoadTab(i); edRenderTabBar(); }
-        function edNewTab(path = [], label = '') { edSaveTab(); edTabs.push({ path: [...path], sel: new Set(), scroll: 0, search: '', label: label || '🏠 Root', pinned: false }); edActiveTab = edTabs.length - 1; edLoadTab(edActiveTab); edRenderTabBar(); }
-        function edCloseTab(i) { if (edTabs.length === 1) return; if (edTabs[i].pinned) return; edTabs.splice(i, 1); if (edActiveTab >= i) edActiveTab = Math.max(0, edActiveTab - 1); edLoadTab(edActiveTab); edRenderTabBar(); }
-        function edOpenSubNewTab(id) { const path = edBuildPath(id); if (!path) return; const n = edFind(id); edNewTab(path, `📁 ${parseMeta(n?.title || '').title || id}`); }
-
-        // ═══════════════════ DIVIDERS ═══════════════════
-        function setupDivider(dividerId, panelId, isLeft) {
-            const div = $('#' + dividerId), panel = $('#' + panelId);
-            let drag = false, sx = 0, sw = 0;
-            div.addEventListener('mousedown', e => { drag = true; sx = e.clientX; sw = panel.offsetWidth; div.classList.add('dragging'); document.body.style.cursor = 'col-resize'; document.body.style.userSelect = 'none'; });
-            document.addEventListener('mousemove', e => { if (!drag) return; const dx = isLeft ? (e.clientX - sx) : (sx - e.clientX); panel.style.width = Math.max(140, Math.min(700, sw + dx)) + 'px'; });
-            document.addEventListener('mouseup', () => { if (!drag) return; drag = false; div.classList.remove('dragging'); document.body.style.cursor = ''; document.body.style.userSelect = ''; });
-            div.addEventListener('dblclick', () => { panel.style.width = isLeft ? '220px' : '400px'; });
-        }
-        setupDivider('ed-divider1', 'ed-tree-panel', true);
-        setupDivider('ed-divider2', 'ed-preview-panel', false);
-
-        function edToggleTree() { const p = $('#ed-tree-panel'), b = $('#tb-collapse'); p.classList.toggle('collapsed'); b.textContent = p.classList.contains('collapsed') ? '▶' : '◀'; }
-        function edTogglePreview() { const p = $('#ed-preview-panel'), b = $('#tb-preview'); p.classList.toggle('collapsed'); edPreviewOn = !p.classList.contains('collapsed'); b.classList.toggle('active', edPreviewOn); }
-
-        // ═══════════════════ IMPORT / EXPORT ═══════════════════
-        function edImport(file) {
-            if (!file) return;
-            const r = new FileReader();
-            r.onload = e => {
-                try {
-                    if (file.name.endsWith('.json')) {
-                        const data = JSON.parse(e.target.result);
-                        if (Array.isArray(data)) edTree = data;
-                        else if (data.tree) edTree = data.tree;
-                        else throw new Error('Invalid JSON');
-                        // Assign IDs
-                        let maxId = 0;
-                        function walk(ns) { ns.forEach(n => { if (n.id) { const m = /bm_(\d+)/.exec(n.id); if (m) maxId = Math.max(maxId, +m[1]); } else n.id = edGenId(); if (n.children) walk(n.children); }); }
-                        walk(edTree); edIdCtr = Math.max(edIdCtr, maxId);
-                        edPath = []; edExpanded.clear(); edSearch = ''; edSelection.clear();
-                        edTree.filter(n => n.type === 'folder').forEach(n => edExpanded.add(n.id));
-                        edTabs = [{ path: [], sel: new Set(), scroll: 0, search: '', label: '🏠 Root', pinned: false }]; edActiveTab = 0;
-                        edUndoStack = []; edRedoStack = []; edDirty = false;
-                        edRenderAll(); edRenderTabBar();
-                    } else {
-                        edLoad(e.target.result);
-                    }
-                    toast(`「${file.name}」を読み込みました`, 'ok');
-                } catch (err) { toast(`エラー: ${err.message}`, 'err'); }
-            };
-            r.readAsText(file);
-        }
-        function edExport() {
-            const html = edSerialize();
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-            a.download = `bookmarks_${new Date().toISOString().slice(0, 10)}.html`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
-            edDirty = false; edUpdateUndoBtn();
-            toast('HTMLエクスポート完了', 'ok');
-        }
-        function edExportJSON() {
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(new Blob([JSON.stringify({ tree: edTree, exported: Date.now() }, null, 2)], { type: 'application/json' }));
-            a.download = `bookmarks_${new Date().toISOString().slice(0, 10)}.json`;
-            document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
-            toast('JSONエクスポート完了', 'ok');
-        }
-
-        function edSetScope(deep) { edSearchDeep = deep; $$('.scope-btn').forEach((b, i) => b.classList.toggle('on', (i === 0) === deep)); if (edSearch) edRenderContent(); }
-
-        // ═══════════════════ EVENT LISTENERS ═══════════════════
-        $('#tb-import').addEventListener('click', () => $('#ed-file-input').click());
-        $('#ed-file-input').addEventListener('change', e => { edImport(e.target.files[0]); e.target.value = ''; });
-        $('#tb-export').addEventListener('click', edExport);
-        $('#tb-export-json').addEventListener('click', edExportJSON);
-        $('#tb-undo').addEventListener('click', edUndo);
-        $('#tb-redo').addEventListener('click', edRedo);
-        $('#tb-add-link').addEventListener('click', edAddLink);
-        $('#tb-add-folder').addEventListener('click', edAddFolder);
-        $('#tb-add-root').addEventListener('click', edAddRoot);
-        $('#tree-add-root').addEventListener('click', edAddRoot);
-        $('#tree-expand-all').addEventListener('click', () => { function w(ns) { ns.forEach(n => { if (n.type === 'folder') { edExpanded.add(n.id); if (n.children) w(n.children); } }) } w(edTree); edRenderTree(); });
-        $('#tree-collapse-all').addEventListener('click', () => { edExpanded.clear(); edRenderTree(); });
-        $('#tb-edit').addEventListener('click', () => { if (edSelection.size === 1) edOpenModal([...edSelection][0]); });
-        $('#tb-delete').addEventListener('click', edDeleteSel);
-        $('#tb-move-to').addEventListener('click', edBulkMove);
-        $('#tb-copy-url').addEventListener('click', () => edCopyUrls([...edSelection]));
-        $('#tb-tag-btn').addEventListener('click', () => edTagDialog([...edSelection]));
-        $('#tb-rate-btn').addEventListener('click', () => edRateDialog([...edSelection]));
-        $('#tb-collapse').addEventListener('click', edToggleTree);
-        $('#tb-preview').addEventListener('click', edTogglePreview);
-        $('#tb-keys').addEventListener('click', () => $('#ed-keys-modal').classList.add('show'));
-        $('#tb-dedup').addEventListener('click', edDedupAll);
-        $('#tb-find-dup').addEventListener('click', () => { edShowDup = !edShowDup; $('#tb-find-dup').classList.toggle('active', edShowDup); const n = edShowDup ? edComputeDup() : 0; if (edShowDup) toast(`${edDupSet.size} 件の重複を検出`); edRenderContent(); });
-        $('#ed-m-save').addEventListener('click', edSaveModal);
-        $('#ed-m-cancel').addEventListener('click', edCloseModal);
-        $('#ed-modal').addEventListener('click', e => { if (e.target === $('#ed-modal')) edCloseModal(); });
-        $('#ed-move-cancel').addEventListener('click', () => $('#ed-move-modal').classList.remove('show'));
-        $('#ed-move-modal').addEventListener('click', e => { if (e.target === $('#ed-move-modal')) $('#ed-move-modal').classList.remove('show'); });
-        $('#ed-keys-modal').addEventListener('click', e => { if (e.target === $('#ed-keys-modal')) $('#ed-keys-modal').classList.remove('show'); });
-        $('#list-top').addEventListener('click', () => $('#ed-content-list').scrollTop = 0);
-        $('#list-bot').addEventListener('click', () => $('#ed-content-list').scrollTop = 99999);
-        $('#btn-search').addEventListener('click', () => {
-            const bar = $('#ed-search-bar'); bar.classList.toggle('show');
-            if (bar.classList.contains('show')) $('#ed-search-input').focus();
-            else { edSearch = ''; $('#ed-search-input').value = ''; edRenderContent(); }
-        });
-        $('#ed-search-input').addEventListener('input', debounce(e => { edSearch = e.target.value.trim(); edRenderContent(); }, 150));
-        $('#flt-type').addEventListener('change', e => { edFilterType = e.target.value; edRenderContent(); });
-        $('#flt-rating').addEventListener('change', e => { edFilterRating = +e.target.value; edRenderContent(); });
-        $('#flt-sort').addEventListener('change', e => { edSortBy = e.target.value; edRenderContent(); });
-        $('#flt-tag').addEventListener('input', debounce(e => { edFilterTag = e.target.value.trim(); edRenderContent(); }, 150));
-
-        document.addEventListener('dragover', e => e.preventDefault());
-        document.addEventListener('drop', e => {
-            e.preventDefault(); const file = e.dataTransfer.files[0];
-            if (file && (file.name.endsWith('.html') || file.name.endsWith('.htm') || file.name.endsWith('.json'))) {
-                $$('.tab-btn').forEach(b => b.classList.remove('active'));
-                $$('.tab-content').forEach(c => c.classList.remove('active'));
-                document.querySelector('[data-tab="editor"]').classList.add('active');
-                $('#tab-editor').classList.add('active');
-                edImport(file);
-            }
-        });
-
-        // Keyboard
-        document.addEventListener('keydown', e => {
-            if ($('#ed-modal').classList.contains('show')) {
-                if (e.key === 'Escape') edCloseModal();
-                if (e.key === 'Enter' && e.target.tagName === 'INPUT') edSaveModal();
-                return;
-            }
-            if ($$('.modal-ov.show').length > 0) { if (e.key === 'Escape') $$('.modal-ov.show').forEach(m => m.classList.remove('show')); return; }
-            if (!$('#tab-editor').classList.contains('active')) return;
-
-            const inp = ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName);
-            if (e.key === 'Escape') {
-                if (inp) { e.target.blur(); return; }
-                if (edSelection.size > 0) { edSelection.clear(); edUpdateSelUI(); }
-                else if (edSearch) { edSearch = ''; $('#ed-search-input').value = ''; $('#ed-search-bar').classList.remove('show'); edRenderContent(); }
-                return;
-            }
-            if (inp) return;
-
-            if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) { e.preventDefault(); edUndo(); return; }
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'Z' && e.shiftKey))) { e.preventDefault(); edRedo(); return; }
-            if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); edExport(); return; }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'o') { e.preventDefault(); $('#tb-import').click(); return; }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'p') { e.preventDefault(); edTogglePreview(); return; }
-
-            if ((e.key === 'Backspace' || (e.key === 'ArrowLeft' && e.altKey))) { e.preventDefault(); edNavUp(); return; }
-
-            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                e.preventDefault();
-                const items = edCI(); if (!items.length) return;
-                const ids = items.map(i => i.id);
-                const curId = [...edSelection][edSelection.size - 1] || ids[0];
-                let idx = ids.indexOf(curId);
-                idx = e.key === 'ArrowDown' ? Math.min(ids.length - 1, idx + 1) : Math.max(0, idx - 1);
-                if (!e.shiftKey) edSelection.clear();
-                edSelection.add(ids[idx]); edLastSel = ids[idx]; edUpdateSelUI();
-                const n = edFind(ids[idx]); if (n?.type === 'link' && edPreviewOn) edPreview(ids[idx]);
-                document.querySelector(`.ci[data-id="${ids[idx]}"]`)?.scrollIntoView({ block: 'nearest' });
-                return;
-            }
-            if (e.key === 'Home') { e.preventDefault(); $('#ed-content-list').scrollTop = 0; }
-            if (e.key === 'End') { e.preventDefault(); $('#ed-content-list').scrollTop = 99999; }
-
-            if ((e.ctrlKey || e.metaKey) && e.key === 'a') { e.preventDefault(); edCI().forEach(n => edSelection.add(n.id)); edUpdateSelUI(); }
-            if (e.key === 'Delete' && edSelection.size > 0) edDeleteSel();
-            if (e.key === 'F2' && edSelection.size === 1) edOpenModal([...edSelection][0]);
-            if (e.key === 'Enter' && edSelection.size === 1) { const n = edFind([...edSelection][0]); if (n?.type === 'folder') edOpenSub(n.id); else if (n?.url) window.open(n.url, '_blank'); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'c') { e.preventDefault(); edCopyUrls([...edSelection]); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'l') { e.preventDefault(); edAddLink(); }
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'N' || e.key === 'n')) { e.preventDefault(); edAddFolder(); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'f') { e.preventDefault(); $('#btn-search').click(); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 't') { e.preventDefault(); edNewTab(); }
-            if ((e.ctrlKey || e.metaKey) && e.key === 'w') { e.preventDefault(); edCloseTab(edActiveTab); }
-            if (e.key === '?') $('#ed-keys-modal').classList.add('show');
-        });
-
-        // Warn on close if dirty
-        window.addEventListener('beforeunload', e => { if (edDirty) { e.preventDefault(); return e.returnValue = ''; } });
-
-        // Init
-        edRenderTabBar();
-        edRenderAll();
-        setTimeout(() => edLoadAutosave(), 300);
-    </script>
+    <script src="./app.js"></script>
 </body>
 
 </html>
